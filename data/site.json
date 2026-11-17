@@ -5,7 +5,7 @@
     "slogan": "İstanbul'un Gayrimenkul ve İş Birliği Ağı",
     "kampanya_slogani": "Doğru Talep, Doğru Eşleşme, Güçlü İş Birliği!",
     "_site_url_notu": "Alan adı alındığında yalnızca site_url değerini https://alanadiniz.com yapın; canonical, sitemap.xml, robots.txt, yapılandırılmış veri, PWA ve CNAME otomatik güncellenir. Supabase > Authentication > URL Configuration bölümündeki Site URL de aynı adrese çevrilmelidir.",
-    "site_url": "https://y73755-commits.github.io/istanbul-emlak-agi",
+    "site_url": "https://istanbul-emlak-agi.pages.dev",
     "google_site_verification": ""
   },
   "iletisim": {
