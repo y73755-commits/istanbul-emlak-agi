@@ -93,7 +93,7 @@
       (p.rol === "emlakci" ? '<div class="field span2"><label for="p-ofis">Emlak ofisi</label><input id="p-ofis" name="ofis_adi" maxlength="100" value="' + esc(p.ofis_adi || "") + '"></div>' : "") +
       "</div>" + (p.rol === "emlakci" ? '<fieldset class="ilce-set"><legend>Hizmet verdiğiniz ilçeler</legend><div class="ilce-checks">' + ilce + "</div></fieldset>" +
       '<div class="foto-alan">' + (p.foto_url ? '<img src="' + esc(p.foto_url) + '" alt="Profil fotoğrafı" width="72" height="72">' : '<span class="foto-bos">Fotoğraf yok</span>') +
-      '<div class="field"><label for="p-foto">Profil fotoğrafı (isteğe bağlı, en fazla 2 MB)</label><input id="p-foto" type="file" accept="image/jpeg,image/png,image/webp" data-foto></div></div>' : "") +
+      '<div class="field"><label for="p-foto">Profil fotoğrafı (isteğe bağlı; otomatik küçültülür)</label><input id="p-foto" type="file" accept="image/jpeg,image/png,image/webp" data-foto></div></div>' : "") +
       '<p class="form-err" hidden data-err></p><p class="form-ok" hidden data-ok>Bilgileriniz kaydedildi.</p><button class="btn btn-gold" type="submit">Kaydet</button></form>';
   }
 
@@ -113,16 +113,38 @@
       A.sb().then(function (c) {
         var once = Promise.resolve();
         if (dosya) {
-          if (dosya.size > 2097152) throw new Error("Fotoğraf en fazla 2 MB olmalı.");
-          var yol = me.id + "/profil-" + Date.now() + "." + (dosya.type.split("/")[1] || "jpg");
-          once = c.storage.from("profil").upload(yol, dosya, { upsert: true, contentType: dosya.type }).then(function (u) {
+          if (dosya.size > 15728640) throw new Error("Fotoğraf çok büyük (en fazla 15 MB).");
+          // Ücretsiz depolama kotasını korumak için fotoğraf tarayıcıda 480 px'e küçültülür ve
+          // her kullanıcı için tek dosya tutulur (yenisi eskisinin üzerine yazılır).
+          var yol = me.id + "/profil.jpg";
+          once = kucult(dosya).then(function (b) {
+            if (b.size > 2097152) throw new Error("Fotoğraf en fazla 2 MB olmalı.");
+            return c.storage.from("profil").upload(yol, b, { upsert: true, contentType: b.type || "image/jpeg", cacheControl: "3600" });
+          }).then(function (u) {
             if (u.error) throw new Error("Fotoğraf yüklenemedi: " + u.error.message);
-            veri.foto_url = c.storage.from("profil").getPublicUrl(yol).data.publicUrl;
+            veri.foto_url = c.storage.from("profil").getPublicUrl(yol).data.publicUrl + "?v=" + Date.now();
           });
         }
         return once.then(function () { return c.from("profiller").update(veri).eq("id", me.id); });
       }).then(function (r) { if (r && r.error) throw new Error(r.error.message); $("[data-ok]", f).hidden = false; return A.rpc("profilim").then(function (p) { me = p; }); })
         .catch(function (e) { var x = $("[data-err]", f); x.textContent = e.message; x.hidden = false; });
+    });
+  }
+
+  function kucult(dosya) {
+    return new Promise(function (ok) {
+      try {
+        var u = URL.createObjectURL(dosya), img = new Image();
+        img.onload = function () {
+          var k = Math.min(1, 480 / Math.max(img.naturalWidth, img.naturalHeight)), cv = document.createElement("canvas");
+          cv.width = Math.max(1, Math.round(img.naturalWidth * k)); cv.height = Math.max(1, Math.round(img.naturalHeight * k));
+          var g = cv.getContext("2d"); g.fillStyle = "#fff"; g.fillRect(0, 0, cv.width, cv.height); g.drawImage(img, 0, 0, cv.width, cv.height);
+          URL.revokeObjectURL(u);
+          cv.toBlob(function (b) { ok(b && b.size ? b : dosya); }, "image/jpeg", 0.82);
+        };
+        img.onerror = function () { URL.revokeObjectURL(u); ok(dosya); };
+        img.src = u;
+      } catch (e) { ok(dosya); }
     });
   }
 
