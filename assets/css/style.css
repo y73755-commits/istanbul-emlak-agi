@@ -117,7 +117,7 @@ p{margin:0}
 .field select:disabled{opacity:.55}
 .field select option,.field select optgroup{background:#151E32;color:var(--text)}
 .field :is(input,select,textarea):focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgba(197,160,89,.18)}
-.field ::placeholder{color:#64748B}
+.field ::placeholder{color:#8A97AC}
 .field.bad :is(input,select,textarea){border-color:#e07a6a}
 .hint{color:var(--muted);font-size:.8rem}
 .duo{display:grid;grid-template-columns:1fr 1fr;gap:10px}
@@ -168,7 +168,7 @@ p{margin:0}
 .tcard-foot{display:flex;justify-content:space-between;align-items:center;gap:8px 10px;flex-wrap:wrap;margin-top:auto;padding-top:8px}
 .tcard-foot .btn{min-height:44px}
 .tcard-sub{display:flex;justify-content:space-between;gap:10px}
-.tcard-no{color:#64748B;font-size:.8rem}
+.tcard-no{color:#94A3B8;font-size:.8rem}
 .tcard .link-gold{font-size:.86rem}
 .ornek-not{margin-top:18px;color:var(--muted);font-size:.85rem}
 .empty{display:flex;flex-direction:column;align-items:center;text-align:center;gap:14px;padding:48px 20px;border:1px dashed var(--line2);border-radius:var(--r);color:var(--muted)}
@@ -227,6 +227,7 @@ p{margin:0}
 @media (max-width:900px){.map-sec{grid-template-columns:1fr;gap:28px}}
 
 /* ---------- tablo ---------- */
+.table-wrap:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 .table-wrap{position:relative;overflow-x:auto;border:1px solid var(--line);border-radius:var(--r);background:var(--card)}
 .matrix{width:100%;border-collapse:collapse;min-width:620px;font-size:.92rem}
 .matrix th,.matrix td{padding:15px 16px;border-bottom:1px solid var(--line);text-align:center;vertical-align:middle}

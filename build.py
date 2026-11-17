@@ -245,7 +245,7 @@ def footer(P):
     </div>
   </div>
 </footer>
-<div class="wa-float" data-wa>
+<aside class="wa-float" data-wa aria-label="WhatsApp iletişim">
   <div class="wa-menu" id="wa-menu" hidden data-wa-menu>
     <p class="wa-menu-h">WhatsApp'tan yazın</p>
     {"".join(f'<a href="{e(wa(WA_MSG[k]))}" target="_blank" rel="noopener" data-track="whatsapp" data-ctx="float-{k}">{e(t)}{I["arrow"]}</a>' for k, t in WA_SECENEK)}
@@ -253,7 +253,7 @@ def footer(P):
   <a class="wa-btn" href="{e(wa(WA_MSG["platform"]))}" target="_blank" rel="noopener" aria-controls="wa-menu" aria-expanded="false" data-wa-toggle data-track="whatsapp" data-ctx="float">
     {I["wa"]}<span class="sr">WhatsApp ile iletişime geçin</span>
   </a>
-</div>'''
+</aside>'''
 
 def page(path, title, desc, body, P="", active=None, schema=None, extra_js="", noindex=False, og_img="assets/img/og.jpg", son_js=""):
     url = BASE_URL + "/" + ("" if path == "index.html" else path)
@@ -458,7 +458,7 @@ def harita_svg(P, vurgula=None, etiket=True, link=True):
         parts.append(path)
         if etiket and vurgula == i["ad"]:
             labels.append(f'<text x="{m["x"]}" y="{m["y"]}" class="on" style="font-size:{30 * fs:.1f}px;stroke-width:{4 * fs:.1f}px">{e(i["ad"])}</text>')
-    return (f'<div class="imap-wrap"><svg class="imap" viewBox="{vb}" role="img" aria-label="{e(vurgula + " ilçesi haritası") if vurgula else "İstanbul ilçe haritası"}">'
+    return (f'<div class="imap-wrap"><svg class="imap" viewBox="{vb}" role="group" aria-label="{e(vurgula + " ilçesi haritası") if vurgula else "İstanbul ilçe haritası"}">'
             f'<g class="imap-p">{"".join(parts)}</g><g class="imap-l" aria-hidden="true">{"".join(labels)}</g></svg>'
             f'<div class="imap-tip" role="status" aria-live="polite" hidden></div></div>')
 
@@ -488,7 +488,7 @@ def kim_ne_gorur():
            "no": f'<span class="no">{I["x"]}<span class="sr">Göremez</span></span>',
            "part": '<span class="part">Sınırlı</span>'}
     body = "".join(f'<tr><th scope="row">{e(r[0])}</th><td>{sym[r[1]]}</td><td>{sym[r[2]]}</td><td>{sym[r[3]]}</td></tr>' for r in rows)
-    return f'''<div class="table-wrap"><table class="matrix">
+    return f'''<div class="table-wrap" tabindex="0" role="region" aria-label="Üyelik karşılaştırma tablosu"><table class="matrix">
 <thead><tr><th scope="col">Bilgi</th><th scope="col">Ziyaretçi / Vatandaş</th><th scope="col">Onaylı emlakçı</th><th scope="col">Onaylı emlakçı <span>(ücretli, aktif)</span></th></tr></thead>
 <tbody>{body}</tbody></table></div>'''
 

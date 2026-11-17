@@ -208,6 +208,22 @@ begin
     else r := r || E'✗ Arşivleme çalışmadı\n'; kaldi := kaldi + 1; end if;
   exception when others then r := r || '✗ Arşivleme: ' || sqlerrm || E'\n'; kaldi := kaldi + 1; end;
 
+  ---------------------------------------------------------------- 11) Üyelik bitiş hatırlatması (SMS, 3 gün önce)
+  insert into public.uyelikler (emlakci_id, paket_id, baslangic, bitis, durum) values
+    (bek, (select id from public.paketler order by sira limit 1), now() - interval '27 days', now() + interval '60 hours', 'aktif');
+  update public.profiller set durum = 'onayli' where id = bek;
+  begin
+    n := public.uyelik_hatirlatmalari();
+    select count(*) into m from public.sms_kayitlari where telefon = '905009990002' and tur = 'hatirlatma';
+    if n >= 1 and m = 1 then r := r || E'✓ Bitişine 3 gün kalan üyeye hatırlatma SMS kaydı oluştu' ||
+         coalesce(' (' || (select hata from public.sms_kayitlari where telefon = '905009990002' order by id desc limit 1) || ')', '') || E'\n'; gecti := gecti + 1;
+    else r := r || '✗ Hatırlatma oluşmadı (n=' || n || ', sms=' || m || E')\n'; kaldi := kaldi + 1; end if;
+    n := public.uyelik_hatirlatmalari();
+    select count(*) into m from public.sms_kayitlari where telefon = '905009990002' and tur = 'hatirlatma';
+    if m = 1 then r := r || E'✓ Aynı üyeliğe ikinci kez hatırlatma gönderilmiyor\n'; gecti := gecti + 1;
+    else r := r || E'✗ Hatırlatma tekrarlandı\n'; kaldi := kaldi + 1; end if;
+  exception when others then r := r || '✗ Hatırlatma: ' || sqlerrm || E'\n'; kaldi := kaldi + 1; end;
+
   r := r || E'\nSONUÇ: ' || gecti || ' geçti, ' || kaldi || ' kaldı. (Test kayıtları geri alındı.)';
   raise exception '%', r;
 end $$;
