@@ -19,9 +19,12 @@ jobs:
         run: |
           set -euo pipefail
           [ -n "$PAROLA" ] || { echo "::error::YEDEK_PAROLASI tanımlı değil."; exit 1; }
-          RUN=$(gh run list --workflow yedek.yml --status success --limit 1 --json databaseId -q '.[0].databaseId')
-          [ -n "$RUN" ] || { echo "::error::Başarılı bir yedek çalışması bulunamadı."; exit 1; }
-          gh run download "$RUN" -n veritabani-yedegi -D indir
+          # En yeni "veritabani-yedegi" dosyası doğrudan GitHub'dan bulunur (süresi dolmamış olanlar).
+          ID=$(gh api "repos/$GITHUB_REPOSITORY/actions/artifacts?name=veritabani-yedegi&per_page=20" -q '[.artifacts[] | select(.expired == false)] | sort_by(.created_at) | last | .id')
+          [ -n "$ID" ] && [ "$ID" != "null" ] || { echo "::error::İndirilebilir yedek bulunamadı."; exit 1; }
+          gh api "repos/$GITHUB_REPOSITORY/actions/artifacts/$ID" -q '"Yedek dosyası: " + .name + " (" + .created_at + ", " + (.size_in_bytes|tostring) + " bayt)"'
+          gh api "repos/$GITHUB_REPOSITORY/actions/artifacts/$ID/zip" > yedek.zip
+          mkdir -p indir && unzip -o -q yedek.zip -d indir
           F=$(ls indir/*.gpg | head -1); echo "Yedek: $F"
           gpg --batch --yes --pinentry-mode loopback --passphrase "$PAROLA" -d -o yedek.tgz "$F"
           tar xzf yedek.tgz && ls -la yedek
