@@ -21,6 +21,7 @@ def load(name):
 
 D = load("site.json"); T = load("talepler.json"); IST = load("istanbul.json")
 MAP = load("harita.json"); G = load("gorseller.json")
+ILCE_BILGI = load("ilce_bilgileri.json")["ilceler"]
 S, C, U = D["site"], D["iletisim"], D["uyelik"]
 KOD = T["kodlar"]
 BASE_URL = S["site_url"].rstrip("/")
@@ -32,6 +33,8 @@ ILCE_BY_AD = {i["ad"]: i for i in ILCELER}
 GORSEL = {g["ad"]: g for g in G["gorseller"]}
 PAID = bool(U.get("ucretli_erisim_aktif"))
 SITE = S["ad"]
+SB = D["supabase"]
+SB_VER = hashlib.sha1(open(os.path.join(ROOT, "assets", "js", "supabase.min.js"), "rb").read()).hexdigest()[:8]
 
 GRUP = {"konut": ["daire", "rezidans", "villa", "mustakil"],
         "arsa": ["arsa", "tarla"],
@@ -50,6 +53,17 @@ WA_MSG = {
 }
 WA_SECENEK = [("uyelik", "Üyelik satın almak istiyorum"), ("bilgi", "Emlakçı üyeliği hakkında bilgi"),
               ("platform", "Platform hakkında bilgi"), ("destek", "Destek almak istiyorum")]
+
+def ek_de(kelime):
+    """Türkçe bulunma eki: Kadıköy'de, Beşiktaş'ta, Pendik'te, Kartal'da."""
+    w = kelime.strip().replace("İ", "i").replace("I", "ı").lower()
+    sesli = [ch for ch in w if ch in "aıoueiöü"]
+    v = sesli[-1] if sesli else "e"
+    sert = w[-1:] in list("çfhkpsşt")
+    return "'" + ("t" if sert else "d") + ("a" if v in "aıou" else "e")
+
+def de(ad):
+    return ad + ek_de(ad)
 
 def tl(n):
     return f"{int(n):,}".replace(",", ".")
@@ -139,16 +153,11 @@ I = {
  "menu": svg(f'<path {ST} d="M4 7h16M4 12h16M4 17h16"/>'),
 }
 
-LOGO_MARK = ('<svg class="logo-mark" viewBox="0 0 64 64" aria-hidden="true" fill="none" stroke-linecap="round" stroke-linejoin="round">'
-             '<path d="M9 29 32 10l23 19" stroke="#C5A059" stroke-width="3.6"/>'
-             '<path d="M22 25v20M42 25v20" stroke="#E2D4B7" stroke-width="2.8"/>'
-             '<path d="M9 38c5-3 9-7 13-13 3 6 6 9 10 10 4-1 7-4 10-10 4 6 8 10 13 13" stroke="#E2D4B7" stroke-width="1.7"/>'
-             '<path d="M8 44h48" stroke="#C5A059" stroke-width="2.8"/>'
-             '<path d="M15 51h13M36 51h13M22 56h20" stroke="#94A3B8" stroke-width="1.8"/></svg>')
-
 def logo(P):
-    return (f'<a class="logo" href="{P}index.html" aria-label="{e(SITE)} ana sayfa">{LOGO_MARK}'
-            '<span class="logo-text"><span class="logo-top">İSTANBUL</span><span class="logo-main">Emlak Ağı</span></span></a>')
+    """Görsel paketindeki logo (kaynak/logo → assets/icons/logo-44/88.webp, tools/gorselleri_hazirla.py)."""
+    return (f'<a class="logo" href="{P}index.html" aria-label="{e(SITE)} ana sayfa">'
+            f'<img src="{P}assets/icons/logo-44.webp" srcset="{P}assets/icons/logo-44.webp 1x, {P}assets/icons/logo-88.webp 2x" '
+            f'width="273" height="44" alt="{e(SITE)}" decoding="async"></a>')
 
 # ------------------------------------------------------------------ görseller
 def pic(name, P, cls="", sizes="(max-width: 760px) 100vw, 33vw", eager=False, alt=None):
@@ -169,6 +178,7 @@ NAV = [("index.html", "Ana Sayfa"), ("musteri-talepleri.html", "Müşteri Talepl
 
 CSS = asset_ver("assets/css/style.css")
 JS = asset_ver("assets/js/main.js")
+APPJS = asset_ver("assets/js/app.js")
 
 PAGES = []  # sitemap için
 
@@ -218,7 +228,7 @@ def footer(P):
       <div>
         <h2 class="foot-h">WhatsApp</h2>
         <ul class="foot-list">{wa_links}</ul>
-        <p class="foot-note">WhatsApp: <a href="{e(wa(WA_MSG["platform"]))}" target="_blank" rel="noopener">{e(C["telefon_gosterim"])}</a><br>Konum: {e(C.get("konum", "İstanbul"))}<br>{e(C["hizmet_bolgesi"])}</p>
+        <p class="foot-note">WhatsApp: <a href="{e(wa(WA_MSG["platform"]))}" target="_blank" rel="noopener" data-wa-gosterim>{e(C["telefon_gosterim"])}</a><br>Konum: {e(C.get("konum", "İstanbul"))}<br>{e(C["hizmet_bolgesi"])}</p>
       </div>
     </div>
     <div class="foot-ilce">
@@ -245,7 +255,7 @@ def footer(P):
   </a>
 </div>'''
 
-def page(path, title, desc, body, P="", active=None, schema=None, extra_js="", noindex=False, og_img="assets/img/og.jpg"):
+def page(path, title, desc, body, P="", active=None, schema=None, extra_js="", noindex=False, og_img="assets/img/og.jpg", son_js=""):
     url = BASE_URL + "/" + ("" if path == "index.html" else path)
     full_title = title if SITE in title else f"{title} | {SITE}"
     sch = ""
@@ -263,7 +273,10 @@ def page(path, title, desc, body, P="", active=None, schema=None, extra_js="", n
     verify = f'<meta name="google-site-verification" content="{e(S["google_site_verification"])}">' if S.get("google_site_verification") else ""
     robots = '<meta name="robots" content="noindex">' if noindex else ""
     cfg = json.dumps({"base": BASE_PATH, "wa": C["whatsapp"], "ga4": D.get("olcum", {}).get("ga4_id", ""), "yayinGun": YAYIN_GUN,
-                      "bugun": TODAY.isoformat()})
+                      "bugun": TODAY.isoformat(), "sbUrl": SB["url"], "sbKey": SB["anahtar"], "sbVer": SB_VER,
+                      "kod": KOD, "ikon": {k: I[k] for k in ("heart", "pin", "lock", "check", "wa")},
+                      "ilceListesi": [i["ad"] for i in ILCELER], "ucretliOzellik": U["ucretli_ozellikler"]},
+                     ensure_ascii=False).replace("</", "<\\/")
     html = f'''<!doctype html>
 <html lang="tr">
 <head>
@@ -282,7 +295,7 @@ def page(path, title, desc, body, P="", active=None, schema=None, extra_js="", n
 <meta property="og:image" content="{BASE_URL}/{og_img}">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="#0B1120">
-<link rel="icon" href="{P}assets/icons/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="{P}favicon.ico" sizes="48x48">
 <link rel="icon" href="{P}assets/icons/favicon-32.png" sizes="32x32" type="image/png">
 <link rel="apple-touch-icon" href="{P}assets/icons/apple-touch-icon.png">
 <link rel="manifest" href="{P}manifest.webmanifest">
@@ -298,6 +311,8 @@ def page(path, title, desc, body, P="", active=None, schema=None, extra_js="", n
 </main>
 {footer(P)}
 {extra_js}<script src="{P}{JS}" defer></script>
+<script src="{P}{APPJS}" defer></script>
+{son_js}
 </body>
 </html>
 '''
@@ -337,6 +352,7 @@ def tur_ad(t):
     return KOD["turler"].get(t.get("tur", ""), "")
 
 def talep_kart(t, P, tip="vatandas"):
+    """Sade talep kartı. Gizli bilgi içermez; detay butonu sunucuda yetki kontrolü yapar."""
     kat_map = KOD["vatandas_kategorileri"] if tip == "vatandas" else KOD["emlakci_kategorileri"]
     kat = kat_map.get(t["kategori"], "")
     yer = " / ".join(x for x in [t.get("ilce") or "İstanbul geneli", t.get("mahalle")] if x)
@@ -348,39 +364,32 @@ def talep_kart(t, P, tip="vatandas"):
     grup = next((g for g, lst in GRUP.items() if t.get("tur") in lst), "")
     bmin = t.get("butce_min") or 0
     bmax = t.get("butce_max") or t.get("butce_min") or 0
-    ornek = '<span class="badge badge-ornek" title="Sitenin işleyişini göstermek için örnek kayıt">Örnek</span>' if t.get("ornek") else ""
-    if tip == "vatandas":
-        kilit = ("Talep sahibinin adı, telefonu ve tam açıklaması yalnızca aktif ücretli üyeliği olan onaylı emlakçılara açıktır."
-                 + ("" if PAID else " Ücretli erişim yakında açılacak."))
-        btn_msg = (f"Merhaba, {t['no']} numaralı talebin ({t['baslik']}) detaylarına erişmek için üyelik almak istiyorum.\nAd soyad: \nEmlak ofisi: "
-                   if PAID else f"Merhaba, {t['no']} numaralı talep ve emlakçı üyeliği hakkında bilgi almak istiyorum.\nAd soyad: \nEmlak ofisi: ")
-        btn_txt = "Üyelik al, detayları gör" if PAID else "Üyelik hakkında bilgi al"
-    else:
-        kilit = "Talebin detayı ve paylaşan emlakçının iletişim bilgisi yalnızca onaylı emlakçı üyelere açıktır."
-        btn_msg = f"Merhaba, {t['no']} numaralı iş birliği talebiyle ({t['baslik']}) ilgileniyorum.\nAd soyad: \nEmlak ofisi: \nOnaylı üye miyim: "
-        btn_txt = "Bu talep için iletişime geç"
-    return f'''<article class="tcard" data-talep data-no="{e(t["no"])}" data-tarih="{e(t["tarih"])}" data-kategori="{e(t["kategori"])}" data-ilce="{e(t.get("ilce", ""))}" data-mahalle="{e(t.get("mahalle", ""))}" data-tur="{e(t.get("tur", ""))}" data-grup="{grup}" data-islem="{e(t.get("islem", ""))}" data-bmin="{bmin}" data-bmax="{bmax}" data-ornek="{1 if t.get("ornek") else 0}">
-  <div class="tcard-top">
-    <span class="badge">{e(kat)}</span>{ornek}
-    <button class="fav" type="button" aria-pressed="false" data-fav="{e(t["no"])}" title="Favorilere ekle">{I["heart"]}<span class="sr">Favorilere ekle</span></button>
-  </div>
+    ornek = t.get("ornek")
+    kilit = "İletişim ücretli üyelere açık" if tip == "vatandas" else "İletişim onaylı emlakçılara açık"
+    return f'''<article class="tcard" data-talep data-id="" data-no="{e(t["no"])}" data-tarih="{e(t["tarih"])}" data-kategori="{e(t["kategori"])}" data-ilce="{e(t.get("ilce", ""))}" data-mahalle="{e(t.get("mahalle", ""))}" data-tur="{e(t.get("tur", ""))}" data-grup="{grup}" data-islem="{e(t.get("islem", ""))}" data-bmin="{bmin}" data-bmax="{bmax}" data-ornek="{1 if ornek else 0}">
+  <div class="tcard-top"><span class="badge">{e(kat)}</span>{'<span class="badge badge-ornek">Örnek</span>' if ornek else ''}<button class="fav" type="button" aria-pressed="false" data-fav="{e(t["no"])}" title="Favorilere ekle">{I["heart"]}<span class="sr">Favorilere ekle</span></button></div>
   <h3 class="tcard-h">{e(t["baslik"])}</h3>
   <p class="tcard-loc">{I["pin"]}{e(yer)}</p>
-  <p class="tcard-price">{e(butce_metni(t))}</p>
-  <p class="tcard-meta">{" · ".join(e(m) for m in meta if m)}</p>
+  <div class="tcard-mid"><p class="tcard-price">{e(butce_metni(t))}</p><p class="tcard-meta">{" · ".join(e(m) for m in meta if m)}</p></div>
   <p class="tcard-sum">{e(t["ozet"])}</p>
-  <div class="tcard-lock">{I["lock"]}<p>{e(kilit)}</p></div>
-  <div class="tcard-foot">
-    <span class="tcard-no">{e(t["no"])} · {e(tarih_metni(t["tarih"]))}</span>
-    <a class="link-gold" href="{e(wa(btn_msg))}" target="_blank" rel="noopener" data-track="whatsapp" data-ctx="talep-{e(t["no"])}">{e(btn_txt)}{I["arrow"]}</a>
-  </div>
+  <div class="tcard-foot"><span class="tcard-lock">{I["lock"]}{kilit}</span><button class="btn btn-sm btn-line" type="button" data-detay="{'ornek' if ornek else ''}" data-tip="{tip}">Detay ve iletişim</button></div>
+  <div class="tcard-sub"><span class="tcard-no">{e(t["no"])} · {e(tarih_metni(t["tarih"]))}</span></div>
 </article>'''
+
+def liste_notu(tip="vatandas"):
+    if tip == "vatandas":
+        m = ("Herkes taleplerin yalnızca özetini görür. Talep sahibinin adı, telefonu ve detaylı açıklaması; yönetici tarafından onaylanmış, "
+             "aktif ücretli üyeliği olan emlakçılara sunucudan açılır ve her görüntüleme kayıt altına alınır.")
+    else:
+        m = ("İş birliği paylaşımlarının detayı ve paylaşan emlakçının iletişim bilgisi yalnızca onaylı emlakçı üyelere açılır. "
+             "Emlakçılar arası paylaşım ücretsizdir.")
+    return f'<p class="list-note">{I["lock"]}<span>{m}</span></p>'
 
 def bos_durum(metin, P, cta=True):
     btn = f'<a class="btn btn-gold" href="{P}talep-olustur.html">{I["plus"]}<span>Ücretsiz talep oluştur</span></a>' if cta else ""
     return f'<div class="empty">{I["doc"]}<p>{metin}</p>{btn}</div>'
 
-ORNEK_NOT = ('<p class="ornek-not">“Örnek” etiketli kayıtlar, platformun nasıl çalışacağını göstermek için hazırlanmıştır; '
+ORNEK_NOT = ('<p class="ornek-not" data-ornek-not>“Örnek” etiketli kayıtlar, platformun nasıl çalışacağını göstermek için hazırlanmıştır; '
              'gerçek talepler yayınlandıkça kaldırılacaktır.</p>')
 
 # ------------------------------------------------------------------ form parçaları
@@ -422,8 +431,9 @@ def _bbox(d):
     return min(xs), min(ys), max(xs), max(ys)
 
 def harita_svg(P, vurgula=None, etiket=True, link=True):
-    big = {"Silivri", "Çatalca", "Arnavutköy", "Eyüpsultan", "Sarıyer", "Beykoz", "Şile", "Çekmeköy", "Tuzla",
-           "Pendik", "Büyükçekmece", "Başakşehir", "Ümraniye", "Kadıköy", "Üsküdar", "Maltepe", "Esenyurt", "Sancaktepe"}
+    """İlçe haritası. Kalabalık etiketler yerine her ilçenin adı üzerine gelince
+    (masaüstü) ya da dokununca (mobil) açılan ipucunda gösterilir (main.js: haritaIpucu).
+    Yakınlaştırılmış ilçe haritasında yalnızca vurgulanan ilçenin adı yazılır."""
     parts, labels = [], []
     vb = MAP["viewBox"]; fs = 1.0
     if vurgula and vurgula in MAP["ilceler"]:
@@ -434,25 +444,23 @@ def harita_svg(P, vurgula=None, etiket=True, link=True):
         vx = min(max(cx - w / 2, 0), 1000 - w) if w < 1000 else 0
         vb = f"{vx:.0f} {cy - h / 2:.0f} {w:.0f} {h:.0f}"
         fs = w / 1000
-        VX0, VY0, VX1, VY1 = vx, cy - h / 2, vx + w, cy + h / 2
     for i in ILCELER:
         m = MAP["ilceler"].get(i["ad"])
         if not m:
             continue
         n = SAYI.get(i["ad"], 0)
         cls = "il" + (" has" if n else "") + (" on" if vurgula == i["ad"] else "")
-        tip = f'{i["ad"]} · {n} talep' if n else f'{i["ad"]} · {len(i["mahalleler"])} mahalle'
-        path = f'<path class="{cls}" d="{m["d"]}"><title>{e(tip)}</title></path>'
+        bilgi = f'{n} talep' if n else f'{len(i["mahalleler"])} mahalle'
+        path = f'<path class="{cls}" d="{m["d"]}"></path>'
         if link:
-            path = f'<a href="{P}ilce/{i["slug"]}.html" aria-label="{e(i["ad"])}">{path}</a>'
+            path = (f'<a href="{P}ilce/{i["slug"]}.html" aria-label="{e(i["ad"])} ({e(bilgi)})" '
+                    f'data-ad="{e(i["ad"])}" data-bilgi="{e(bilgi)}">{path}</a>')
         parts.append(path)
-        if etiket and vurgula and VX0 + 20 * fs < m["x"] < VX1 - 20 * fs and VY0 + 10 * fs < m["y"] < VY1 - 10 * fs and (fs < .6 or i["ad"] in big or i["ad"] == vurgula):
-            on = vurgula == i["ad"]
-            labels.append(f'<text x="{m["x"]}" y="{m["y"]}" style="font-size:{(30 if on else 22) * fs:.1f}px;stroke-width:{4 * fs:.1f}px"{" class=on" if on else ""}>{e(i["ad"])}</text>')
-        elif etiket and not vurgula and i["ad"] in big:
-            labels.append(f'<text x="{m["x"]}" y="{m["y"]}">{e(i["ad"])}</text>')
-    return (f'<svg class="imap" viewBox="{vb}" role="img" aria-label="{e(vurgula + " ilçesi haritası") if vurgula else "İstanbul ilçe haritası"}">'
-            f'<g class="imap-p">{"".join(parts)}</g><g class="imap-l" aria-hidden="true">{"".join(labels)}</g></svg>')
+        if etiket and vurgula == i["ad"]:
+            labels.append(f'<text x="{m["x"]}" y="{m["y"]}" class="on" style="font-size:{30 * fs:.1f}px;stroke-width:{4 * fs:.1f}px">{e(i["ad"])}</text>')
+    return (f'<div class="imap-wrap"><svg class="imap" viewBox="{vb}" role="img" aria-label="{e(vurgula + " ilçesi haritası") if vurgula else "İstanbul ilçe haritası"}">'
+            f'<g class="imap-p">{"".join(parts)}</g><g class="imap-l" aria-hidden="true">{"".join(labels)}</g></svg>'
+            f'<div class="imap-tip" role="status" aria-live="polite" hidden></div></div>')
 
 # ------------------------------------------------------------------ ANA SAYFA
 KUTULAR = [
@@ -512,8 +520,8 @@ def build_index():
   <div class="hero-bg">{pic("hero-bogaz", P, sizes="100vw", eager=True)}</div>
   <div class="wrap hero-in">
     <p class="kicker">{e(S["slogan"])}</p>
-    <h1>{e(D["ana_sayfa"]["baslik"])}</h1>
-    <p class="lead">{e(D["ana_sayfa"]["alt_aciklama"])}</p>
+    <h1 data-ayar="ana_baslik">{e(D["ana_sayfa"]["baslik"])}</h1>
+    <p class="lead" data-ayar="ana_alt">{e(D["ana_sayfa"]["alt_aciklama"])}</p>
     <div class="actions">
       <a class="btn btn-gold btn-lg" href="talep-olustur.html">{I["plus"]}<span>Ücretsiz Talep Oluştur</span></a>
       <a class="btn btn-line btn-lg" href="emlakci-uyelik.html">{I["users"]}<span>Emlakçı Olarak Katıl</span></a>
@@ -545,12 +553,13 @@ def build_index():
       <div><p class="kicker">Yeni müşteri talepleri</p><h2>Vatandaşların güncel arayışları</h2></div>
       <a class="link-gold" href="musteri-talepleri.html">Tüm müşteri talepleri{I["arrow"]}</a>
     </div>
-    <div class="tgrid">{vt}</div>
+    {liste_notu("vatandas")}
+    <div class="tgrid" data-db-list data-tip="vatandas" data-limit="6">{vt}</div>
     <div class="sec-head row mt">
       <div><p class="kicker">Emlakçı talepleri</p><h2>Ofisler arası iş birliği</h2></div>
       <a class="link-gold" href="emlakci-talepleri.html">Tüm emlakçı talepleri{I["arrow"]}</a>
     </div>
-    <div class="tgrid">{et}</div>
+    <div class="tgrid" data-db-list data-tip="emlakci" data-limit="3">{et}</div>
     {ornek}
   </div>
 </section>
@@ -605,7 +614,7 @@ def build_index():
       <h3 class="yaka-h">Avrupa Yakası</h3><div class="chips">{chips(avrupa)}</div>
       <h3 class="yaka-h">Anadolu Yakası</h3><div class="chips">{chips(anadolu)}</div>
     </div>
-    <div class="map-box">{harita_svg(P)}<p class="map-cap">Haritada ilçeye dokunarak o ilçenin sayfasına gidin.</p></div>
+    <div class="map-box">{harita_svg(P)}<p class="map-cap">İlçe adını görmek için haritada üzerine gelin ya da dokunun; ikinci dokunuşta ilçe sayfası açılır.</p></div>
   </div>
 </section>
 
@@ -671,7 +680,9 @@ def build_lists():
 <section class="sec sec-tight">
   <div class="wrap">
     {filtre_bar("vatandas")}
-    <div class="tgrid" data-list>{cards}</div>
+    <h2 class="sr">Yayındaki vatandaş talepleri</h2>
+    {liste_notu("vatandas")}
+    <div class="tgrid" data-list data-db-list data-tip="vatandas">{cards}</div>
     {bos_durum("Bu filtrelere uyan talep bulunamadı. Filtreleri genişletin veya talebinizi oluşturun.", P).replace('class="empty"', 'class="empty" hidden data-empty')}
     {ORNEK_NOT if any(t.get("ornek") for t in VT) else ""}
   </div>
@@ -691,7 +702,9 @@ def build_lists():
 <section class="sec sec-tight">
   <div class="wrap">
     {filtre_bar("emlakci")}
-    <div class="tgrid" data-list>{cards}</div>
+    <h2 class="sr">Yayındaki emlakçı iş birliği talepleri</h2>
+    {liste_notu("emlakci")}
+    <div class="tgrid" data-list data-db-list data-tip="emlakci">{cards}</div>
     {bos_durum("Bu filtrelere uyan emlakçı talebi bulunamadı.", P, cta=False).replace('class="empty"', 'class="empty" hidden data-empty')}
     {ORNEK_NOT if any(t.get("ornek") for t in ET) else ""}
   </div>
@@ -709,6 +722,8 @@ def kisi_alanlari(prefix, ofis=False):
                     hint="WhatsApp'ta kullandığınız numara.", fid=f"{prefix}-tel"))
 
 def talep_alanlari(prefix, kind):
+    detay_ipucu = ("Yalnızca aktif ücretli üyeliği olan onaylı emlakçılar görür." if kind == "vatandas"
+                   else "Yalnızca onaylı emlakçı üyeler görür.")
     return f'''<div class="form-grid">
   {field("Talep türü", f'<select id="{prefix}-kat" name="kategori" required data-kategori>{kategori_opts(kind)}</select>', "span2", fid=f"{prefix}-kat")}
   {field("İlçe", f'<select id="{prefix}-ilce" name="ilce" {"required" if kind == "vatandas" else ""} data-ilce>{ilce_opts("İlçe seçin" if kind == "vatandas" else "İstanbul geneli")}</select>', fid=f"{prefix}-ilce")}
@@ -718,50 +733,50 @@ def talep_alanlari(prefix, kind):
   {field('<span data-butce-label>Bütçe aralığı (TL)</span>', f'<div class="duo"><input id="{prefix}-bmin" name="bmin" inputmode="numeric" placeholder="En az" data-money aria-label="En az"><input name="bmax" inputmode="numeric" placeholder="En fazla" data-money aria-label="En fazla"></div>', "span2", fid=f"{prefix}-bmin")}
   {field("Metrekare (m²)", f'<input id="{prefix}-m2" name="m2" inputmode="numeric" maxlength="6" placeholder="ör. 120">', fid=f"{prefix}-m2")}
   {field("Oda sayısı", f'<select id="{prefix}-oda" name="oda">' + opt("", "Seçin") + "".join(opt(x, x) for x in ["1+0", "1+1", "2+1", "3+1", "3+2", "4+1", "4+2", "5+1 ve üzeri"]) + '</select>', "", hint="Konut için", fid=f"{prefix}-oda")}
-  {field("Açıklama", f'<textarea id="{prefix}-aciklama" name="aciklama" rows="4" maxlength="600" required placeholder="Aradığınız veya sunduğunuz gayrimenkulü kısaca anlatın: konum tercihi, kat, yaş, otopark, tapu durumu…"></textarea>', "span2", fid=f"{prefix}-aciklama")}
+  {field("Başlık", f'<input id="{prefix}-baslik" name="baslik" required minlength="5" maxlength="120" placeholder="Seçimlerinize göre önerilir, değiştirebilirsiniz">', "span2", hint="Herkese açık görünür.", fid=f"{prefix}-baslik")}
+  {field("Kısa açıklama", f'<input id="{prefix}-ozet" name="ozet" required minlength="5" maxlength="200" placeholder="ör. Metroya yakın, otoparklı, ara kat tercih">', "span2", hint="Herkese açık görünür; ad, telefon veya adres yazmayın.", fid=f"{prefix}-ozet")}
+  {field("Detaylı açıklama", f'<textarea id="{prefix}-aciklama" name="aciklama" rows="4" maxlength="2000" required placeholder="Konum tercihi, kat, bina yaşı, otopark, tapu durumu, taşınma tarihi…"></textarea>', "span2", hint=detay_ipucu, fid=f"{prefix}-aciklama")}
 </div>'''
 
 def basari_paneli():
     return f'''<div class="done" hidden data-done tabindex="-1">
   <span class="done-ic">{I["check"]}</span>
-  <h2>WhatsApp mesajınız hazır</h2>
-  <p>WhatsApp yeni sekmede açıldı. <strong>Mesajı göndermeyi unutmayın</strong>; gönderdiğinizde bilgileriniz bize ulaşır.</p>
-  <p class="small">WhatsApp açılmadıysa: <a class="link-gold" href="#" target="_blank" rel="noopener" data-done-link>buraya dokunun</a>.</p>
+  <div data-done-icerik></div>
 </div>'''
 
 def build_forms():
     P = ""
-    kvkk = f'<a href="kvkk-aydinlatma-metni.html" target="_blank">KVKK aydınlatma metnini</a>'
+    kvkk = '<a href="kvkk-aydinlatma-metni.html" target="_blank">KVKK aydınlatma metnini</a>'
     # --- vatandaş talep formu
     ph, sch = page_head(P, "Ücretsiz talep", "Gayrimenkul talebinizi oluşturun",
-        "Üye olmanıza gerek yok. Formu doldurun, talebiniz WhatsApp üzerinden bize ulaşsın. Talebiniz kontrol edildikten sonra özet olarak yayınlanır; adınız ve telefonunuz herkese açık yayınlanmaz.",
+        "Üye olmanıza gerek yok. Formu doldurun, telefonunuzu SMS koduyla doğrulayın; talebiniz kontrol edildikten sonra özet olarak yayınlanır. Adınız ve telefonunuz herkese açık yayınlanmaz.",
         None, [("index.html", "Ana Sayfa"), (None, "Talep Oluştur")])
-    form = f'''<form class="card form" data-wa-form="vatandas" novalidate>
+    form = f'''<form class="card form" data-db-form="vatandas" novalidate>
   {talep_alanlari("v", "vatandas")}
   <h2 class="form-h">İletişim bilgileriniz</h2>
   <div class="form-grid">{kisi_alanlari("v")}</div>
   <label class="check consent"><input type="checkbox" name="onay" required>
     <span>İletişim bilgilerimin, platformun ücretli üyesi olan emlak danışmanlarıyla paylaşılmasına onay veriyorum. {kvkk} okudum.</span></label>
   <p class="form-err" role="alert" hidden data-err></p>
-  <button class="btn btn-gold btn-lg btn-block" type="submit">{I["wa"]}<span>Talebimi WhatsApp ile gönder</span></button>
-  <p class="form-note">{I["lock"]} Form bilgileriniz bu siteye kaydedilmez. “Gönder”e dokunduğunuzda cihazınızda bir WhatsApp mesajı hazırlanır; siz gönderdiğinizde bize ulaşır. Fotoğraf eklemek isterseniz WhatsApp sohbetine ekleyebilirsiniz.</p>
+  <button class="btn btn-gold btn-lg btn-block" type="submit">{I["check"]}<span>SMS koduyla doğrula ve gönder</span></button>
+  <p class="form-note">{I["lock"]} Telefonunuza 6 haneli bir doğrulama kodu gönderilir. Talebinizi daha sonra <a class="link-gold" href="hesabim.html">Hesabım</a> sayfasından görüntüleyebilir, düzenleyebilir veya kapatabilirsiniz.</p>
 </form>
 {basari_paneli()}'''
     aside = f'''<aside class="side">
   <div class="card side-card">
     <h2>Nasıl ilerler?</h2>
     <ol class="numlist">
-      <li>Formu doldurup WhatsApp mesajını gönderirsiniz. Mesaj sizin numaranızdan geldiği için telefonunuz doğrulanmış olur.</li>
+      <li>Formu doldurur, telefonunuzu SMS koduyla doğrularsınız.</li>
       <li>Talebiniz kontrol edilir ve özet hâliyle yayınlanır.</li>
       <li>Onaylı emlak danışmanları size uygun seçeneklerle ulaşır.</li>
-      <li>Talebiniz sonuçlandığında veya vazgeçtiğinizde WhatsApp'tan yazmanız yeterli; talebiniz kapatılır, verileriniz silinir.</li>
+      <li>Talebiniz sonuçlandığında Hesabım sayfasından kapatır veya kalıcı olarak silersiniz.</li>
     </ol>
   </div>
   <div class="card side-card">
     <h2>Herkese açık görünen</h2>
     <p>Başlık, talep türü, ilçe/mahalle, bütçe, oda/m² ve kısa açıklama.</p>
     <h2>Herkese açık görünmeyen</h2>
-    <p>Adınız, telefonunuz ve tam açıklamanız. Bunlar yalnızca aktif ücretli üyeliği olan onaylı emlakçılarla paylaşılır.</p>
+    <p>Adınız, telefonunuz ve detaylı açıklamanız. Bunlar yalnızca aktif ücretli üyeliği olan onaylı emlakçılara, sunucudan açılır.</p>
   </div>
 </aside>'''
     body = f'''{ph}
@@ -779,7 +794,7 @@ def build_forms():
     ph, sch = page_head(P, "Emlakçı üyeliği", "Emlak danışmanı olarak ağa katılın",
         "Taşınmaz Ticareti Yetki Belgesi olan emlak danışmanları ve emlak ofisleri başvurabilir. Başvurunuz yönetici tarafından kontrol edilir; onaylandığında hesabınız açılır ve iş birliği paylaşımlarına katılırsınız.",
         "is-birligi", [("index.html", "Ana Sayfa"), ("uye-ol.html", "Üye Ol"), (None, "Emlakçı Üyeliği")])
-    form = f'''<form class="card form" data-wa-form="emlakci" novalidate>
+    form = f'''<form class="card form" data-db-form="emlakci" novalidate>
   <h2 class="form-h first">Kişisel ve ofis bilgileri</h2>
   <div class="form-grid">
     {kisi_alanlari("k", ofis=True)}
@@ -788,12 +803,12 @@ def build_forms():
   </div>
   <h2 class="form-h">Hizmet verdiğiniz ilçeler</h2>
   {ilce_checks}
-  <p class="hint">Profil fotoğrafı eklemek isterseniz (isteğe bağlı) WhatsApp sohbetine gönderebilirsiniz.</p>
+  <p class="hint">Profil fotoğrafınızı onaydan sonra Hesabım sayfasından ekleyebilirsiniz (isteğe bağlı).</p>
   <label class="check consent"><input type="checkbox" name="onay" required>
-    <span>{kvkk.replace("metnini", "metnini")} okudum; <a href="kullanim-kosullari.html" target="_blank">kullanım koşullarını</a> kabul ediyorum.</span></label>
+    <span>{kvkk} okudum; <a href="kullanim-kosullari.html" target="_blank">kullanım koşullarını</a> kabul ediyorum.</span></label>
   <p class="form-err" role="alert" hidden data-err></p>
-  <button class="btn btn-gold btn-lg btn-block" type="submit">{I["wa"]}<span>Başvurumu WhatsApp ile gönder</span></button>
-  <p class="form-note">{I["lock"]} Başvuru bilgileriniz bu siteye kaydedilmez; WhatsApp mesajı olarak iletilir.</p>
+  <button class="btn btn-gold btn-lg btn-block" type="submit">{I["check"]}<span>SMS koduyla doğrula ve başvur</span></button>
+  <p class="form-note">{I["lock"]} Telefonunuza 6 haneli bir doğrulama kodu gönderilir. Başvurunuzun durumunu Hesabım sayfasından takip edersiniz.</p>
 </form>
 {basari_paneli()}'''
     aside = f'''<aside class="side">
@@ -805,9 +820,9 @@ def build_forms():
   <div class="card side-card">
     <h2>Onay süreci</h2>
     <ol class="numlist">
-      <li>Başvurunuz WhatsApp ile bize ulaşır.</li>
-      <li>Yetki belgeniz ve bilgileriniz kontrol edilir.</li>
-      <li>Onaylandığınızda size bilgi verilir, hesabınız aktif olur.</li>
+      <li>Telefonunuzu doğrulayıp başvurunuzu gönderirsiniz.</li>
+      <li>Yetki belgeniz ve bilgileriniz yönetici tarafından kontrol edilir.</li>
+      <li>Onaylandığınızda hesabınız aktif olur, iş birliği paylaşımı yapabilirsiniz.</li>
     </ol>
   </div>
 </aside>'''
@@ -819,37 +834,62 @@ def build_forms():
 
     # --- üye ol (yönlendirme)
     ph, sch = page_head(P, "Giriş yap / Üye ol", "Platforma katılın",
-        "Vatandaşlar üye olmadan ücretsiz talep oluşturabilir. Emlak danışmanları başvuru formuyla katılır.",
+        "Vatandaşlar ücretsiz talep oluşturur, emlak danışmanları yetki belgesiyle başvurur. Daha önce kayıt olduysanız telefonunuzla giriş yapın.",
         None, [("index.html", "Ana Sayfa"), (None, "Üye Ol")])
     body = f'''{ph}
 <section class="sec sec-tight">
   <div class="wrap">
-    <div class="join">
+    <div class="join three">
+      <a class="join-card" href="giris.html">
+        <span class="step-ic">{I["user"]}</span>
+        <h2>Giriş yap</h2>
+        <p>Daha önce talep oluşturduysanız veya emlakçı olarak başvurduysanız telefonunuza gelen kodla giriş yapın.</p>
+        <span class="link-gold">Telefonla giriş{I["arrow"]}</span>
+      </a>
       <a class="join-card" href="talep-olustur.html">
         <span class="step-ic">{I["home"]}</span>
         <h2>Vatandaşım</h2>
-        <p>Gayrimenkul arıyorum veya gayrimenkulümü satmak / kiraya vermek istiyorum. Üyelik gerekmez, tamamen ücretsizdir.</p>
+        <p>Gayrimenkul arıyorum veya gayrimenkulümü satmak / kiraya vermek istiyorum. Tamamen ücretsizdir.</p>
         <span class="link-gold">Ücretsiz talep oluştur{I["arrow"]}</span>
       </a>
       <a class="join-card" href="emlakci-uyelik.html">
         <span class="step-ic">{I["users"]}</span>
         <h2>Emlak danışmanıyım</h2>
-        <p>Emlak danışmanı veya emlak ofisiyim. Yetki belgemle başvurup iş birliği ağına katılmak istiyorum.</p>
+        <p>Yetki belgemle başvurup emlakçılar arası iş birliği ağına katılmak istiyorum.</p>
         <span class="link-gold">Emlakçı başvurusu{I["arrow"]}</span>
       </a>
     </div>
-    <div class="card note-card">
-      {I["user"]}
-      <div>
-        <h2>Üye girişi</h2>
-        <p>Onaylı üyelerimizin talep ve üyelik işlemleri şimdilik WhatsApp üzerinden yürütülmektedir. Mevcut talebinizi görmek, düzenlemek veya kapatmak için bize yazın.</p>
-        <a class="btn btn-line btn-sm" href="{e(wa("Merhaba, İstanbul Emlak Ağı'ndaki talebim / üyeliğim hakkında yazıyorum.\nAd soyad: \nTalep no (varsa): "))}" target="_blank" rel="noopener" data-track="whatsapp" data-ctx="giris">{I["wa"]}<span>WhatsApp ile işlem yap</span></a>
-      </div>
-    </div>
   </div>
 </section>'''
-    page("uye-ol.html", "Giriş Yap / Üye Ol", "Vatandaşlar ücretsiz talep oluşturur, emlak danışmanları yetki belgesiyle başvurup iş birliği ağına katılır.",
+    page("uye-ol.html", "Giriş Yap / Üye Ol", "Vatandaşlar ücretsiz talep oluşturur, emlak danışmanları yetki belgesiyle başvurup iş birliği ağına katılır. Kayıtlı üyeler telefonla giriş yapar.",
          body, P, None, schema=sch)
+
+    # --- giriş
+    ph, sch = page_head(P, "Üye girişi", "Telefonunuzla giriş yapın",
+        "Şifre gerekmez. Telefon numaranıza gelen 6 haneli kodla giriş yapın; taleplerinizi, başvurunuzu ve üyeliğinizi Hesabım sayfasından yönetin.",
+        None, [("index.html", "Ana Sayfa"), (None, "Giriş")])
+    body = f'''{ph}
+<section class="sec sec-tight"><div class="wrap narrow-sm">
+  <form class="card form" data-giris novalidate>
+    {field("Cep telefonu", '<input id="g-tel" name="tel" type="tel" required autocomplete="tel" inputmode="tel" placeholder="05xx xxx xx xx" data-phone>', fid="g-tel")}
+    <p class="form-err" role="alert" hidden data-err></p>
+    <button class="btn btn-gold btn-lg btn-block" type="submit">{I["check"]}<span>SMS kodu gönder</span></button>
+    <p class="form-note">{I["lock"]} Hesabınız yoksa ilk girişte otomatik oluşturulur. Talep oluşturmak için <a class="link-gold" href="talep-olustur.html">buraya</a>, emlakçı başvurusu için <a class="link-gold" href="emlakci-uyelik.html">buraya</a> tıklayın.</p>
+  </form>
+</div></section>'''
+    page("giris.html", "Üye Girişi", "İstanbul Emlak Ağı üye girişi: telefon numaranıza gelen SMS koduyla şifresiz giriş yapın.", body, P, None, schema=sch)
+
+    # --- hesabım
+    body = f'''<section class="page-head"><div class="wrap ph-in"><p class="kicker">Hesabım</p><h1>Hesabım</h1></div></section>
+<section class="sec sec-tight"><div class="wrap" data-hesabim><p class="muted">Yükleniyor…</p></div></section>'''
+    page("hesabim.html", "Hesabım", "Taleplerinizi, emlakçı başvurunuzu ve üyeliğinizi yönetin.", body, P, None, noindex=True,
+         extra_js=ilce_js(P), son_js=f'<script src="{P}{asset_ver("assets/js/hesabim.js")}" defer></script>')
+
+    # --- yönetici
+    body = f'''<section class="page-head"><div class="wrap ph-in"><p class="kicker">Yönetim</p><h1>Yönetici paneli</h1></div></section>
+<section class="sec sec-tight"><div class="wrap" data-yonetici><p class="muted">Yükleniyor…</p></div></section>'''
+    page("yonetici.html", "Yönetici Paneli", "Yönetici paneli.", body, P, None, noindex=True,
+         son_js=f'<script src="{P}{asset_ver("assets/js/admin.js")}" defer></script>')
 
 # ------------------------------------------------------------------ PORTFÖY VE İŞ BİRLİĞİ
 def build_isbirligi():
@@ -862,18 +902,26 @@ def build_isbirligi():
     ornekler = ["İstanbul genelinde 5 milyon TL bütçeli daire arıyorum.", "Kağıthane'de kiralık 2+1 daire arıyorum.",
                 "Sultanbeyli'de 500 m² üzeri tek tapu arsa arıyorum.", "Kat karşılığı arsa arıyorum.",
                 "Yatırımcıma uygun ticari gayrimenkul arıyorum.", "Portföyümdeki daireye müşteri arıyorum."]
-    form = f'''<form class="card form" id="paylas" data-wa-form="isbirligi" novalidate>
+    form = f'''<div id="paylas" class="paylas-alan">
+<div class="card note-card" data-isb-kilit>
+  {I["lock"]}
+  <div>
+    <h2>İş birliği paylaşımı onaylı emlakçılara açık</h2>
+    <p data-isb-mesaj>Paylaşım yapmak için onaylı bir emlakçı hesabıyla giriş yapmanız gerekir.</p>
+    <div class="actions"><a class="btn btn-gold btn-sm" href="giris.html?donus=portfoy-is-birligi.html">Giriş yap</a><a class="btn btn-line btn-sm" href="emlakci-uyelik.html">Emlakçı başvurusu</a></div>
+  </div>
+</div>
+<form class="card form" data-db-form="isbirligi" hidden novalidate>
   <h2 class="form-h first">İş birliği talebi gönder</h2>
-  <p class="small muted">Yalnızca onaylı emlakçıların talepleri yayınlanır. Henüz üye değilseniz önce <a class="link-gold" href="emlakci-uyelik.html">başvurun</a>.</p>
+  <p class="small muted">Paylaşan: <strong data-isb-kim></strong>. Paylaşımınız kontrol edildikten sonra yayınlanır; iletişim bilgileriniz profilinizden alınır.</p>
   {talep_alanlari("i", "emlakci")}
-  <h2 class="form-h">Emlakçı bilgileri</h2>
-  <div class="form-grid">{kisi_alanlari("i", ofis=True)}</div>
   <label class="check consent"><input type="checkbox" name="onay" required>
-    <span>Talebimin özetinin yayınlanmasını ve iletişim bilgilerimin onaylı emlakçı üyelerle paylaşılmasını kabul ediyorum. <a href="kvkk-aydinlatma-metni.html" target="_blank">KVKK aydınlatma metnini</a> okudum.</span></label>
+    <span>Paylaşım özetinin yayınlanmasını ve iletişim bilgilerimin onaylı emlakçı üyelerle paylaşılmasını kabul ediyorum. <a href="kvkk-aydinlatma-metni.html" target="_blank">KVKK aydınlatma metnini</a> okudum.</span></label>
   <p class="form-err" role="alert" hidden data-err></p>
-  <button class="btn btn-gold btn-lg btn-block" type="submit">{I["wa"]}<span>Talebi WhatsApp ile gönder</span></button>
+  <button class="btn btn-gold btn-lg btn-block" type="submit">{I["check"]}<span>Paylaşımı gönder</span></button>
 </form>
-{basari_paneli()}'''
+{basari_paneli()}
+</div>'''
     body = f'''{ph}
 <section class="sec">
   <div class="wrap split">
@@ -917,7 +965,7 @@ def build_paketler():
         else:
             btn = f'<a class="btn btn-line btn-block" href="{e(wa("Merhaba, " + p["ad"] + " paketi açıldığında haber almak istiyorum.\nAd soyad: \nEmlak ofisi: "))}" target="_blank" rel="noopener" data-track="whatsapp" data-ctx="paket-haber-{p["id"]}">{I["wa"]}<span>Açılınca haber ver</span></a>'
             rib = '<span class="ribbon soon">Yakında</span>'
-        kartlar += f'''<div class="plan{" featured" if p.get("one_cikan") else ""}">
+        kartlar += f'''<div class="plan{" featured" if p.get("one_cikan") else ""}" data-paket-kart>
   {rib}
   <h3>{e(p["ad"])}</h3>
   <p class="plan-days">{p["sure_gun"]} gün</p>
@@ -935,7 +983,7 @@ def build_paketler():
   <ul class="ticks">{"".join(f"<li>{I['check']}{e(x)}</li>" for x in U["ucretsiz_ozellikler"])}</ul>
   <a class="btn btn-gold btn-block" href="emlakci-uyelik.html">{I["users"]}<span>Ücretsiz başvur</span></a>
 </div>'''
-    banner = "" if PAID else f'''<div class="notice">{I["clock"]}<p><strong>Lansman dönemi:</strong> Emlakçı iş birliği üyeliği şu an ücretsizdir. Vatandaş taleplerinin tam detayına erişim sağlayan ücretli paketler, talepler biriktiğinde açılacaktır.</p></div>'''
+    banner = f'''<div class="notice" data-lansman{"" if not PAID else " hidden"}>{I["clock"]}<p><strong>Lansman dönemi:</strong> Emlakçı iş birliği üyeliği şu an ücretsizdir. Vatandaş taleplerinin tam detayına erişim sağlayan ücretli paketler, talepler biriktiğinde açılacaktır.</p></div>'''
     adimlar = ["Paketinizi seçip WhatsApp butonuna dokunun; adınız ve seçtiğiniz paket mesaja hazır yazılır.",
                "Ödeme bilgileri size WhatsApp üzerinden iletilir. Sitede kart veya online ödeme alınmaz.",
                "Ödemenizi yaparsınız; ödeme yönetici tarafından kontrol edilir.",
@@ -949,7 +997,8 @@ def build_paketler():
 <section class="sec sec-tight">
   <div class="wrap">
     {banner}
-    <div class="plans">{free}{kartlar}</div>
+    <h2 class="sr">Üyelik paketleri</h2>
+    <div class="plans" data-db-paketler>{free}{kartlar}</div>
   </div>
 </section>
 <section class="sec sec-alt">
@@ -967,7 +1016,7 @@ def build_paketler():
   </div>
 </section>'''
     page("uyelik-paketleri.html", "Emlakçı Üyelik Paketleri — Aylık ve Yıllık",
-         "İstanbul Emlak Ağı emlakçı üyelik paketleri: ücretsiz iş birliği üyeliği, aylık ve yıllık paketlerle vatandaş taleplerine tam erişim. Online ödeme yok, WhatsApp ile manuel üyelik.",
+         "Emlakçılar için ücretsiz iş birliği üyeliği ile aylık ve yıllık paketler. Vatandaş taleplerinde detay ve iletişime erişin; ödeme WhatsApp üzerinden alınır.",
          body, P, "uyelik-paketleri.html", schema=sch)
 
 # ------------------------------------------------------------------ HAKKIMIZDA + İLETİŞİM
@@ -1029,7 +1078,7 @@ def build_hakkimizda_iletisim():
     <div class="card side-card">
       <h2>İletişim bilgileri</h2>
       <dl class="dl">
-        <dt>WhatsApp ve telefon</dt><dd><a class="link-gold" href="tel:+{C["whatsapp"]}" data-track="telefon" data-ctx="iletisim">{e(C["telefon_gosterim"])}</a></dd>
+        <dt>WhatsApp ve telefon</dt><dd><a class="link-gold" href="tel:+{C["whatsapp"]}" data-track="telefon" data-ctx="iletisim" data-wa-gosterim>{e(C["telefon_gosterim"])}</a></dd>
         <dt>Konum</dt><dd>{e(C.get("konum", "İstanbul"))}</dd>
         <dt>Hizmet bölgesi</dt><dd>{e(C["hizmet_bolgesi"])}</dd>
         <dt>Talep ve veri silme</dt><dd>Talebinizi kapatmak veya verilerinizin silinmesini istemek için WhatsApp'tan “Destek almak istiyorum” seçeneğiyle yazın.</dd>
@@ -1066,29 +1115,51 @@ def build_ilceler():
 
     P = "../"
     for i in ILCELER:
-        ad = i["ad"]
+        ad = i["ad"]; ad_de = de(ad)
+        bilgi = ILCE_BILGI.get(ad, {})
         komsu = [x for x in ILCELER if x["yaka"] == i["yaka"] and x["ad"] != ad]
         vt = [t for t in VT if t.get("ilce") == ad]
         et = [t for t in ET if t.get("ilce") == ad]
         q = urllib.parse.quote(ad)
-        mah = "".join(f'<a class="chip" rel="nofollow" href="{P}talep-olustur.html?ilce={q}&amp;mahalle={urllib.parse.quote(m)}">{e(m)}</a>' for m in i["mahalleler"])
+        one = [m for m in bilgi.get("one_cikan", []) if m in i["mahalleler"]]
+        sirali = one + [m for m in i["mahalleler"] if m not in one]
+        mah = "".join(f'<a class="chip{" chip-on" if m in one else ""}" rel="nofollow" href="{P}talep-olustur.html?ilce={q}&amp;mahalle={urllib.parse.quote(m)}">{e(m)}</a>' for m in sirali)
         kart = "".join(talep_kart(t, P) for t in vt) + "".join(talep_kart(t, P, "emlakci") for t in et)
-        if not kart:
-            kart = bos_durum(f"{e(ad)} için henüz yayında talep yok. {e(ad)}'da gayrimenkul arıyorsanız ilk talebi siz oluşturun.", P).replace(
-                f'href="{P}talep-olustur.html"', f'href="{P}talep-olustur.html?ilce={q}"')
-            tgrid = kart
-        else:
-            tgrid = f'<div class="tgrid">{kart}</div>' + (ORNEK_NOT if any(t.get("ornek") for t in vt + et) else "")
+        bos = bos_durum(f"{e(ad)} için henüz yayında talep yok. {e(ad_de)} gayrimenkul arıyorsanız ilk talebi siz oluşturun.", P).replace(
+            f'href="{P}talep-olustur.html"', f'href="{P}talep-olustur.html?ilce={q}"')
+        tgrid = (f'<div class="tgrid" data-db-list data-tip="hepsi" data-ilce="{e(ad)}" data-limit="12">{kart}</div>'
+                 f'<div data-db-bos hidden>{bos}</div>'
+                 + (ORNEK_NOT if any(t.get("ornek") for t in vt + et) else "")) if kart else (
+                 f'<div class="tgrid" data-db-list data-tip="hepsi" data-ilce="{e(ad)}" data-limit="12"></div>'
+                 f'<div data-db-bos>{bos}</div>')
+        tanitim = bilgi.get("metin", "")
         ph, sch = page_head(P, i["yaka"], f"{e(ad)} gayrimenkul talepleri",
-            f"{e(ad)}'da satılık veya kiralık konut, arsa, ofis ya da dükkân mı arıyorsunuz? Ücretsiz talebinizi oluşturun; {e(ad)}'da çalışan onaylı emlak danışmanları size ulaşsın. Emlakçılar için {e(ad)} bölgesindeki güncel talepler ve iş birliği fırsatları bu sayfada.",
+            f"{e(ad_de)} satılık veya kiralık konut, arsa, ofis ya da dükkân mı arıyorsunuz? Ücretsiz talebinizi oluşturun; {e(ad_de)} çalışan onaylı emlak danışmanları size ulaşsın. Emlakçılar için {e(ad)} bölgesindeki güncel talepler ve iş birliği fırsatları bu sayfada.",
             None, [("index.html", "Ana Sayfa"), ("istanbul-ilceleri.html", "İstanbul İlçeleri"), (None, ad)],
-            f'<a class="btn btn-gold" href="{P}talep-olustur.html?ilce={q}">{I["plus"]}<span>{e(ad)}\'da talep oluştur</span></a>'
+            f'<a class="btn btn-gold" href="{P}talep-olustur.html?ilce={q}">{I["plus"]}<span>{e(ad_de)} talep oluştur</span></a>'
             f'<a class="btn btn-line" href="{P}musteri-talepleri.html?ilce={q}">{e(ad)} talepleri</a>')
-        body = f'''{ph}
+        hakkinda = f'''
+<section class="sec sec-tight">
+  <div class="wrap ilce-hakkinda">
+    <div>
+      <p class="kicker">{e(ad)} hakkında</p>
+      <h2>{e(ad_de)} gayrimenkul arayışı</h2>
+      <p>{e(tanitim)}</p>
+      {f'<p class="muted">Öne çıkan mahalleler: {", ".join(e(m) for m in one)}.</p>' if one else ''}
+    </div>
+    <ul class="ilce-ozet">
+      <li><strong>{len(i["mahalleler"])}</strong><span>mahalle</span></li>
+      <li><strong>{e(i["yaka"].split()[0])}</strong><span>yakası</span></li>
+      <li><strong>Ücretsiz</strong><span>talep oluşturma</span></li>
+    </ul>
+  </div>
+</section>''' if tanitim else ""
+        body = f'''{ph}{hakkinda}
 <section class="sec sec-tight">
   <div class="wrap ilce-top">
     <div>
-      <h2>{e(ad)}'daki güncel talepler</h2>
+      <h2>{e(ad_de)}ki güncel talepler</h2>
+      {liste_notu("vatandas")}
       {tgrid}
     </div>
     <aside class="card side-card ilce-mapcard">
@@ -1096,7 +1167,7 @@ def build_ilceler():
       <dl class="dl">
         <dt>Yaka</dt><dd>{e(i["yaka"])}</dd>
         <dt>Mahalle sayısı</dt><dd>{len(i["mahalleler"])}</dd>
-        <dt>Yayındaki talep</dt><dd>{SAYI[ad]}</dd>
+        <dt>Yayındaki talep</dt><dd data-db-sayi data-ilce="{e(ad)}">{SAYI[ad]}</dd>
       </dl>
     </aside>
   </div>
@@ -1110,13 +1181,14 @@ def build_ilceler():
 </section>
 <section class="sec">
   <div class="wrap">
-    <div class="sec-head"><p class="kicker">{e(i["yaka"])}</p><h2>Diğer ilçeler</h2></div>
+    <div class="sec-head"><p class="kicker">{e(i["yaka"])}</p><h2>{e(i["yaka"])}ndaki diğer ilçeler</h2></div>
     <div class="chips">{"".join(f'<a class="chip" href="{x["slug"]}.html">{e(x["ad"])}</a>' for x in komsu)}</div>
   </div>
 </section>'''
+        aciklama = (f"{ad_de} satılık ve kiralık konut, arsa, ofis ve dükkân talepleri. "
+                    f"{len(i['mahalleler'])} mahallede ücretsiz talep oluşturun, onaylı emlak danışmanları size ulaşsın.")
         page(f"ilce/{i['slug']}.html", f"{ad} Gayrimenkul Talepleri — Satılık, Kiralık, Arsa",
-             f"{ad}'da satılık ve kiralık konut, arsa, ofis ve dükkân talepleri. {len(i['mahalleler'])} mahallede ücretsiz talep oluşturun, onaylı emlak danışmanları size ulaşsın.",
-             body, P, None, schema=sch)
+             aciklama, body, P, None, schema=sch)
 
 # ------------------------------------------------------------------ YASAL METİNLER
 def md(text):
@@ -1161,7 +1233,7 @@ def build_yasal():
         ph, sch = page_head(P, "Yasal", e(baslik), "", None, [("index.html", "Ana Sayfa"), (None, baslik)])
         ph = ph.replace('<p class="lead"></p>', "")
         body = f'''{ph}
-<section class="sec sec-tight"><div class="wrap narrow"><article class="card prose legal">{md(raw)}</article></div></section>'''
+<section class="sec sec-tight"><div class="wrap narrow"><article class="card prose legal" {'data-metin="kvkk"' if slug == "kvkk-aydinlatma-metni" else ('data-metin="kullanim"' if slug == "kullanim-kosullari" else "")}>{md(raw)}</article></div></section>'''
         page(f"{slug}.html", baslik, desc, body, P, None, schema=sch)
 
 # ------------------------------------------------------------------ 404, PWA, sitemap
@@ -1200,7 +1272,7 @@ def build_misc():
 const V = "iea-{ver}";
 const CORE = ["./", "index.html", "cevrimdisi.html", "{CSS}", "{JS}", "{asset_ver("assets/js/ilceler.js")}",
   "assets/fonts/manrope-latin-wght-normal.woff2", "assets/fonts/playfair-display-latin-wght-normal.woff2",
-  "assets/icons/favicon.svg", "assets/icons/icon-192.png"];
+  "assets/icons/logo-44.webp", "assets/icons/icon-192.png"];
 self.addEventListener("install", e => {{ e.waitUntil(caches.open(V).then(c => c.addAll(CORE)).then(() => self.skipWaiting())); }});
 self.addEventListener("activate", e => {{ e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== V).map(k => caches.delete(k)))).then(() => self.clients.claim())); }});
 self.addEventListener("fetch", e => {{
@@ -1227,6 +1299,13 @@ self.addEventListener("fetch", e => {{
     open(os.path.join(ROOT, "sitemap.xml"), "w", encoding="utf-8").write(
         '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' + "\n".join(urls) + "\n</urlset>\n")
     open(os.path.join(ROOT, "robots.txt"), "w", encoding="utf-8").write(f"User-agent: *\nAllow: /\n\nSitemap: {BASE_URL}/sitemap.xml\n")
+    # Özel alan adı bağlandığında (site_url kök adres olduğunda) GitHub Pages için CNAME dosyası otomatik yazılır.
+    host = urllib.parse.urlparse(BASE_URL).hostname or ""
+    cname = os.path.join(ROOT, "CNAME")
+    if BASE_PATH == "/" and not host.endswith("github.io"):
+        open(cname, "w", encoding="utf-8").write(host + "\n")
+    elif os.path.exists(cname):
+        os.remove(cname)
 
 def build_ilce_js():
     data = {i["ad"]: i["mahalleler"] for i in ILCELER}

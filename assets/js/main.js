@@ -10,14 +10,36 @@
   /* ---------- menü ---------- */
   var toggle = $("[data-nav-toggle]"), nav = $("[data-nav]");
   if (toggle && nav) {
-    toggle.addEventListener("click", function () {
-      var open = nav.classList.toggle("open");
-      toggle.setAttribute("aria-expanded", open ? "true" : "false");
-      document.body.style.overflow = open ? "hidden" : "";
+    var mobilMenu = function () { return getComputedStyle(toggle).display !== "none"; };
+    var menuKapat = function (odak) {
+      if (!nav.classList.contains("open")) return;
+      nav.classList.remove("open");
+      toggle.setAttribute("aria-expanded", "false");
+      toggle.setAttribute("aria-label", "Menüyü aç");
+      document.body.style.overflow = "";
+      document.body.classList.remove("menu-acik");
+      if (odak) toggle.focus();
+    };
+    var menuAc = function () {
+      nav.classList.add("open");
+      toggle.setAttribute("aria-expanded", "true");
+      toggle.setAttribute("aria-label", "Menüyü kapat");
+      document.body.style.overflow = "hidden";
+      document.body.classList.add("menu-acik");
+      var ilk = $("a", nav); if (ilk) setTimeout(function () { ilk.focus(); }, 60);
+    };
+    toggle.addEventListener("click", function () { nav.classList.contains("open") ? menuKapat(false) : menuAc(); });
+    nav.addEventListener("click", function (ev) { if (ev.target.closest("a")) menuKapat(false); });
+    document.addEventListener("keydown", function (ev) {
+      if (!nav.classList.contains("open")) return;
+      if (ev.key === "Escape") { ev.preventDefault(); menuKapat(true); return; }
+      if (ev.key === "Tab") { // odak menü içinde dönsün
+        var odaklar = [toggle].concat($$("a, button", nav)), i = odaklar.indexOf(document.activeElement);
+        if (ev.shiftKey && i <= 0) { ev.preventDefault(); odaklar[odaklar.length - 1].focus(); }
+        else if (!ev.shiftKey && i === odaklar.length - 1) { ev.preventDefault(); odaklar[0].focus(); }
+      }
     });
-    nav.addEventListener("click", function (ev) {
-      if (ev.target.closest("a")) { nav.classList.remove("open"); toggle.setAttribute("aria-expanded", "false"); document.body.style.overflow = ""; }
-    });
+    window.addEventListener("resize", function () { if (!mobilMenu()) menuKapat(false); });
   }
 
   /* ---------- WhatsApp menüsü ---------- */
@@ -37,27 +59,41 @@
     });
   }
 
-  /* ---------- WhatsApp düğmesi başka düğmelerin üstüne binmesin ---------- */
+  /* ---------- WhatsApp düğmesi hiçbir bağlantı, düğme veya form alanının üstüne binmesin ---------- */
   var waBox = $("[data-wa]");
   if (waBox) {
-    var AVOID = ".search-btn, form [type=submit], .btn-block, .filters-foot, .field, .done a, .consent-bar, .tcard-foot, .plan .btn, .actions .btn";
+    var ETKILESIM = "a[href], button, input, select, textarea, label, summary, [role=button], [tabindex]:not([tabindex='-1'])";
     var ticking = false;
+    var altindaVarMi = function (r) {
+      // Düğmenin çevresiyle (8 px pay) kesişen, görünür her bağlantı/düğme/form alanı çakışma sayılır.
+      var pad = 8, L = r.left - pad, R = r.right + pad, T = r.top - pad, B = r.bottom + pad;
+      var els = document.querySelectorAll(ETKILESIM);
+      for (var i = 0; i < els.length; i++) {
+        var el = els[i];
+        if (waBox.contains(el)) continue;
+        var q = el.getBoundingClientRect();
+        if (!q.width || !q.height || q.right <= L || q.left >= R || q.bottom <= T || q.top >= B) continue;
+        if (getComputedStyle(el).visibility === "hidden") continue;
+        return true;
+      }
+      return false;
+    };
     var checkOverlap = function () {
       ticking = false;
-      var btn = $(".wa-btn", waBox); if (!btn || !waM || !waM.hidden) { waBox.classList.remove("away"); return; }
-      var r = btn.getBoundingClientRect(), pad = 8, hit = false;
-      var els = $$(AVOID);
-      for (var i = 0; i < els.length && !hit; i++) {
-        var q = els[i].getBoundingClientRect();
-        if (!q.width || !q.height) continue;
-        if (q.right > r.left - pad && q.left < r.right + pad && q.bottom > r.top - pad && q.top < r.bottom + pad) hit = true;
-      }
-      waBox.classList.toggle("away", hit);
+      var btn = $(".wa-btn", waBox);
+      if (!btn || (waM && !waM.hidden)) { waBox.classList.remove("away"); return; }
+      if (document.body.classList.contains("menu-acik") || $("dialog.modal[open]")) { waBox.classList.add("away"); return; }
+      // Gizliyken düğme küçültülmüş (scale) olur; ölçümü gerçek boyutla yap, yoksa göster/gizle arasında gidip gelir.
+      var g = btn.getBoundingClientRect(), cx = g.left + g.width / 2, cy = g.top + g.height / 2, w = btn.offsetWidth / 2, h = btn.offsetHeight / 2;
+      waBox.classList.toggle("away", altindaVarMi({ left: cx - w, right: cx + w, top: cy - h, bottom: cy + h }));
     };
     var schedule = function () { if (!ticking) { ticking = true; requestAnimationFrame(checkOverlap); } };
     window.addEventListener("scroll", schedule, { passive: true });
     window.addEventListener("resize", schedule);
     window.addEventListener("load", schedule);
+    document.addEventListener("toggle", schedule, true);
+    document.addEventListener("click", function () { setTimeout(schedule, 50); }, true);
+    if (window.MutationObserver) new MutationObserver(schedule).observe(document.body, { attributes: true, attributeFilter: ["class", "open", "hidden"], subtree: false });
     window.__ieaWaCheck = schedule;
     schedule();
   }
@@ -86,6 +122,7 @@
     if (window.__ieaFilter) window.__ieaFilter();
   });
   syncFavs();
+  window.__ieaFavSync = function () { favs = store("iea-fav") || []; syncFavs(); };
 
   /* ---------- para ve telefon biçimi ---------- */
   function digits(s) { return String(s || "").replace(/\D+/g, ""); }
@@ -166,8 +203,9 @@
   var fForm = $("[data-filters]"), list = $("[data-list]");
   if (fForm && list) {
     prefill(fForm);
-    var cards = $$("[data-talep]", list), empty = $("[data-empty]"), count = $("[data-count]");
+    var empty = $("[data-empty]"), count = $("[data-count]");
     var apply = function () {
+      var cards = $$("[data-talep]", list);
       var f = fForm.elements;
       var kat = f.kategori.value, ilce = f.ilce.value, mah = f.mahalle.value, tur = f.tur.value, islem = f.islem.value;
       var bmin = +digits(f.bmin.value) || 0, bmax = +digits(f.bmax.value) || 0, onlyFav = f.fav.checked;
@@ -205,7 +243,7 @@
       var qs = q.toString();
       try { history.replaceState(null, "", location.pathname + (qs ? "?" + qs : "")); } catch (e) {}
     };
-    window.__ieaFilter = apply;
+    window.__ieaFilter = apply; window.__ieaFilterInit = apply;
     var box = $("[data-filters-box]");
     if (box && window.innerWidth < 700 && !location.search) box.open = false;
     fForm.addEventListener("change", apply);
@@ -215,7 +253,7 @@
     });
     initIlce(); apply();
   } else {
-    $$("form[data-wa-form], form[data-ilce-form]").forEach(prefill);
+    $$("form[data-db-form], form[data-ilce-form]").forEach(prefill);
     initIlce();
   }
 
@@ -227,7 +265,7 @@
     "kiraya-vermek": ["kiralik", ""], "satilik-portfoy": ["satilik", ""], "kiralik-portfoy": ["kiralik", ""],
     "alici": ["satilik", ""], "kiraci": ["kiralik", ""], "arsa-tarla": ["", "arsa"]
   };
-  $$("form[data-wa-form]").forEach(function (form) {
+  $$("form[data-db-form]").forEach(function (form) {
     var kat = form.elements.kategori, tur = form.elements.tur, islem = form.elements.islem, oda = form.elements.oda;
     var bl = $("[data-butce-label]", form);
     function sync() {
@@ -249,96 +287,6 @@
       var all = boxes.every(function (x) { return x.checked; });
       boxes.forEach(function (x) { x.checked = !all; });
       b.textContent = all ? "Tümünü seç" : "Seçimi kaldır";
-    });
-  });
-
-  /* ---------- formdan WhatsApp mesajı ---------- */
-  function txt(el) { if (!el) return ""; if (el.tagName === "SELECT") return el.value ? el.options[el.selectedIndex].text : ""; return (el.value || "").trim(); }
-  function code(p) {
-    var d = new Date(), z = function (n) { return (n < 10 ? "0" : "") + n; };
-    return p + "-" + d.getFullYear() + z(d.getMonth() + 1) + z(d.getDate()) + "-" + Math.floor(1000 + Math.random() * 9000);
-  }
-  function stamp() {
-    var d = new Date(), z = function (n) { return (n < 10 ? "0" : "") + n; };
-    return z(d.getDate()) + "." + z(d.getMonth() + 1) + "." + d.getFullYear() + " " + z(d.getHours()) + ":" + z(d.getMinutes());
-  }
-  function fail(form, msg, el) {
-    var box = $("[data-err]", form);
-    box.textContent = msg; box.hidden = false;
-    $$(".field.bad", form).forEach(function (f) { f.classList.remove("bad"); });
-    if (el) { var f = el.closest(".field"); if (f) f.classList.add("bad"); el.focus({ preventScroll: false }); }
-    return false;
-  }
-  function talepSatirlari(f) {
-    var L = [];
-    L.push("Talep: " + txt(f.kategori));
-    L.push("İlçe / Mahalle: " + (txt(f.ilce) || "İstanbul geneli") + (f.mahalle.value ? " / " + f.mahalle.value : ""));
-    L.push("Tür: " + txt(f.tur) + " · " + txt(f.islem));
-    var a = digits(f.bmin.value), b = digits(f.bmax.value);
-    var bl = (f.kategori.value === "satmak" || f.kategori.value === "kiraya-vermek" || f.kategori.value === "portfoyum-var") ? "İstenen fiyat" : "Bütçe";
-    if (a || b) L.push(bl + ": " + (a ? fmtMoney(a) : "…") + (b ? " – " + fmtMoney(b) : "") + " TL");
-    var m2 = digits(f.m2.value), oda = f.oda ? f.oda.value : "";
-    if (m2 || oda) L.push((m2 ? "m²: " + m2 : "") + (m2 && oda ? " · " : "") + (oda ? "Oda: " + oda : ""));
-    L.push("Açıklama: " + txt(f.aciklama));
-    return L;
-  }
-  $$("form[data-wa-form]").forEach(function (form) {
-    form.addEventListener("submit", function (ev) {
-      ev.preventDefault();
-      var f = form.elements, kind = form.getAttribute("data-wa-form");
-      $("[data-err]", form).hidden = true;
-      $$(".field.bad", form).forEach(function (x) { x.classList.remove("bad"); });
-      var req = $$("[required]", form).filter(function (el) { return el.type !== "checkbox" && !el.closest("[hidden]"); });
-      for (var i = 0; i < req.length; i++) {
-        if (!String(req[i].value || "").trim()) {
-          var lab = req[i].closest(".field") ? req[i].closest(".field").querySelector("label").textContent : "Bu alan";
-          return fail(form, "Lütfen “" + lab.trim() + "” alanını doldurun.", req[i]);
-        }
-      }
-      if (f.bmin && f.bmax) {
-        var a = +digits(f.bmin.value), b = +digits(f.bmax.value);
-        if (a && b && a > b) return fail(form, "En az bütçe, en fazla bütçeden büyük olamaz.", f.bmin);
-      }
-      var tel = normPhone(f.tel.value);
-      if (!/^5\d{9}$/.test(tel)) return fail(form, "Lütfen 05 ile başlayan 11 haneli cep telefonu numaranızı yazın.", f.tel);
-      if (f.eposta && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(f.eposta.value.trim())) return fail(form, "Lütfen geçerli bir e-posta adresi yazın.", f.eposta);
-      var ilceler = $$('input[name="ilceler"]:checked', form).map(function (x) { return x.value; });
-      if (kind === "emlakci" && !ilceler.length) return fail(form, "Lütfen hizmet verdiğiniz en az bir ilçe seçin.", $('input[name="ilceler"]', form));
-      if (!f.onay.checked) return fail(form, "Devam etmek için onay kutusunu işaretleyin.", f.onay);
-
-      var L = [], kod;
-      if (kind === "vatandas") {
-        kod = code("T");
-        L.push("YENİ VATANDAŞ TALEBİ — İstanbul Emlak Ağı", "Form kodu: " + kod, "");
-        L = L.concat(talepSatirlari(f));
-        L.push("", "Ad soyad: " + txt(f.ad), "Telefon: " + fmtPhone(tel), "",
-          "Onay (" + stamp() + "): İletişim bilgilerimin, platformun ücretli üyesi olan emlak danışmanlarıyla paylaşılmasına onay veriyorum. KVKK aydınlatma metnini okudum.");
-      } else if (kind === "emlakci") {
-        kod = code("B");
-        var avrupa = $$('input[data-yaka="Avrupa Yakası"]', form), anadolu = $$('input[data-yaka="Anadolu Yakası"]', form);
-        var hepsi = function (arr) { return arr.every(function (x) { return x.checked; }); };
-        var ilceTxt = (hepsi(avrupa) && hepsi(anadolu)) ? "Tüm İstanbul" : ilceler.join(", ");
-        L.push("EMLAKÇI ÜYELİK BAŞVURUSU — İstanbul Emlak Ağı", "Başvuru kodu: " + kod, "",
-          "Ad soyad: " + txt(f.ad), "Emlak ofisi: " + txt(f.ofis), "Telefon: " + fmtPhone(tel), "E-posta: " + txt(f.eposta),
-          "Yetki belgesi no: " + txt(f.yetki), "Hizmet ilçeleri: " + ilceTxt, "",
-          "Onay (" + stamp() + "): KVKK aydınlatma metnini okudum, kullanım koşullarını kabul ediyorum.");
-      } else {
-        kod = code("E");
-        L.push("EMLAKÇI İŞ BİRLİĞİ TALEBİ — İstanbul Emlak Ağı", "Form kodu: " + kod, "");
-        L = L.concat(talepSatirlari(f));
-        L.push("", "Ad soyad: " + txt(f.ad), "Emlak ofisi: " + txt(f.ofis), "Telefon: " + fmtPhone(tel), "",
-          "Onay (" + stamp() + "): Talep özetimin yayınlanmasını ve iletişim bilgilerimin onaylı emlakçı üyelerle paylaşılmasını kabul ediyorum.");
-      }
-      var url = WA + "?text=" + encodeURIComponent(L.join("\n"));
-      var w = window.open(url, "_blank", "noopener");
-      track("form_gonderildi", { form: kind });
-      var done = form.parentElement.querySelector("[data-done]");
-      if (done) {
-        $("[data-done-link]", done).href = url;
-        form.hidden = true; done.hidden = false; done.focus();
-        done.scrollIntoView({ behavior: "smooth", block: "center" });
-      }
-      if (!w) location.href = url;
     });
   });
 
@@ -372,6 +320,41 @@
       });
     }
   }
+
+  /* ---------- harita: ilçe adı üzerine gelince / dokununca ---------- */
+  $$(".imap-wrap").forEach(function (wrap) {
+    var tip = $(".imap-tip", wrap); if (!tip) return;
+    var secili = null, dokunma = false;
+    var goster = function (a, x, y, tik) {
+      var r = wrap.getBoundingClientRect();
+      tip.innerHTML = "<strong>" + a.getAttribute("data-ad") + "</strong><small>" + a.getAttribute("data-bilgi") + "</small>" +
+        (tik ? '<br><a href="' + a.getAttribute("href") + '">İlçe sayfasına git →</a>' : "");
+      tip.hidden = false; tip.classList.toggle("tik", !!tik);
+      var w = tip.offsetWidth, h = tip.offsetHeight;
+      var left = Math.min(Math.max(x - r.left, w / 2 + 4), r.width - w / 2 - 4);
+      var top = Math.max(y - r.top, h + 16);
+      tip.style.left = left + "px"; tip.style.top = top + "px";
+    };
+    var gizle = function () { tip.hidden = true; if (secili) secili.classList.remove("secili"); secili = null; };
+    var merkez = function (a) { var b = a.getBoundingClientRect(); return [b.left + b.width / 2, b.top + b.height / 2]; };
+    $$("a[data-ad]", wrap).forEach(function (a) {
+      a.addEventListener("pointerenter", function (ev) { if (ev.pointerType === "mouse") goster(a, ev.clientX, ev.clientY); });
+      a.addEventListener("pointermove", function (ev) { if (ev.pointerType === "mouse" && !tip.classList.contains("tik")) goster(a, ev.clientX, ev.clientY); });
+      a.addEventListener("pointerleave", function (ev) { if (ev.pointerType === "mouse" && !tip.classList.contains("tik")) tip.hidden = true; });
+      a.addEventListener("pointerdown", function (ev) { dokunma = ev.pointerType !== "mouse"; });
+      a.addEventListener("focus", function () { var c = merkez(a); goster(a, c[0], c[1]); });
+      a.addEventListener("blur", function () { if (!tip.classList.contains("tik")) tip.hidden = true; });
+      a.addEventListener("click", function (ev) {
+        if (!dokunma) return;                       // fare/klavye: doğrudan ilçe sayfası
+        if (secili === a) return;                   // ikinci dokunuş: sayfaya git
+        ev.preventDefault();
+        if (secili) secili.classList.remove("secili");
+        secili = a; a.classList.add("secili");
+        goster(a, ev.clientX || merkez(a)[0], ev.clientY || merkez(a)[1], true);
+      });
+    });
+    document.addEventListener("click", function (ev) { if (secili && !wrap.contains(ev.target)) gizle(); });
+  });
 
   /* ---------- uygulama gibi kullanım (PWA) ---------- */
   if ("serviceWorker" in navigator && location.protocol === "https:") {

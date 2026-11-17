@@ -1,14 +1,13 @@
 {
   "_aciklama": "Sitenin ayarları bu dosyadadır. GitHub'da düzenleyip kaydettiğinizde site birkaç dakika içinde otomatik yeniden oluşturulur.",
-
   "site": {
     "ad": "İstanbul Emlak Ağı",
     "slogan": "İstanbul'un Gayrimenkul ve İş Birliği Ağı",
     "kampanya_slogani": "Doğru Talep, Doğru Eşleşme, Güçlü İş Birliği!",
+    "_site_url_notu": "Alan adı alındığında yalnızca site_url değerini https://alanadiniz.com yapın; canonical, sitemap.xml, robots.txt, yapılandırılmış veri, PWA ve CNAME otomatik güncellenir. Supabase > Authentication > URL Configuration bölümündeki Site URL de aynı adrese çevrilmelidir.",
     "site_url": "https://y73755-commits.github.io/istanbul-emlak-agi",
     "google_site_verification": ""
   },
-
   "iletisim": {
     "_aciklama": "WhatsApp numarasını 90 ile başlayan, boşluksuz yazın (ör. 905520928085). Sitedeki tüm WhatsApp butonları bu numarayı kullanır.",
     "whatsapp": "905520928085",
@@ -16,12 +15,10 @@
     "konum": "İstanbul",
     "hizmet_bolgesi": "Yalnızca İstanbul (39 ilçe)"
   },
-
   "ana_sayfa": {
     "baslik": "İstanbul'da Gayrimenkul Aramak Artık Daha Kolay!",
     "alt_aciklama": "İstanbul'un 39 ilçesinde gayrimenkul arayanları, emlak profesyonellerini ve iş birliği yapmak isteyen ofisleri tek platformda buluşturuyoruz."
   },
-
   "uyelik": {
     "_aciklama": "ucretli_erisim_aktif false iken emlakçı üyeliği ücretsizdir ve ücretli paketler 'Yakında' olarak görünür. Vatandaş talepleri birikince true yapın. Fiyatı boş bırakılan paket 'Fiyat için yazın' olarak görünür.",
     "ucretli_erisim_aktif": false,
@@ -77,9 +74,7 @@
       "Favorilere ekleme"
     ]
   },
-
   "talep_yayin_suresi_gun": 60,
-
   "veri_sorumlusu": {
     "_aciklama": "KVKK aydınlatma metninde görünen veri sorumlusu bilgileri. Şirket/şahıs unvanı ve adres belli olunca doldurun.",
     "unvan": "",
@@ -87,9 +82,13 @@
     "eposta": "",
     "mersis_vergi_no": ""
   },
-
   "olcum": {
     "_aciklama": "Kimlikler boş kaldığı sürece hiçbir Google etiketi yüklenmez ve çerez bandı görünmez.",
     "ga4_id": ""
+  },
+  "supabase": {
+    "_aciklama": "Supabase proje adresi ve herkese açık (publishable) anahtar. Gizli anahtarlar buraya yazılmaz.",
+    "url": "https://nmfttzejqkigcxdmwydt.supabase.co",
+    "anahtar": "sb_publishable_LbvZg4J7o-MAsazXJBPZug_r8n2_Bqy"
   }
 }

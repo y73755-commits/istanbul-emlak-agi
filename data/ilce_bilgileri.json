@@ -1,0 +1,234 @@
+{
+  "_aciklama": "İlçe sayfalarındaki bölge tanıtımları. 'metin' sayfada paragraf olarak görünür; 'one_cikan' mahalle adları istanbul.json'daki adlarla aynı yazılmalıdır. Düzenleyip kaydettiğinizde ilçe sayfaları güncellenir.",
+  "ilceler": {
+    "Adalar": {
+      "metin": "Büyükada, Heybeliada, Burgazada ve Kınalıada'dan oluşan Adalar, motorlu araç trafiğinin olmadığı, vapurla ulaşılan sakin bir ilçedir. Tarihi köşkler, yazlık evler ve deniz manzaralı konutlar en çok aranan gayrimenkuller arasındadır; kiralık taleplerde sezonluk kullanım öne çıkar.",
+      "one_cikan": [
+        "Nizam",
+        "Heybeliada",
+        "Burgazada",
+        "Kınalıada"
+      ]
+    },
+    "Arnavutköy": {
+      "metin": "İstanbul Havalimanı'nın bulunduğu Arnavutköy, geniş arazi stoku ve yeni yerleşim alanlarıyla arsa, tarla ve yeni konut projelerine ilginin yüksek olduğu bir ilçedir. Havalimanına yakınlık, depo ve lojistik amaçlı gayrimenkul taleplerini de artırır.",
+      "one_cikan": []
+    },
+    "Ataşehir": {
+      "metin": "İstanbul Finans Merkezi'ne ev sahipliği yapan Ataşehir, rezidans, site içi konut ve ofis taleplerinin yoğun olduğu bir ilçedir. Barbaros ve Atatürk mahallelerindeki site yaşamı ile Kozyatağı'na yakınlığı, hem kiralık hem satılık konut arayışlarında öne çıkar.",
+      "one_cikan": [
+        "Barbaros",
+        "Atatürk",
+        "Küçükbakkalköy",
+        "İçerenköy"
+      ]
+    },
+    "Avcılar": {
+      "metin": "Küçükçekmece Gölü ile Marmara Denizi arasında yer alan Avcılar, üniversite yerleşkesi ve metrobüs hattı sayesinde öğrenci ve aile kiralık taleplerinin yoğun olduğu bir ilçedir. Uygun bütçeli daireler ve kentsel dönüşüm projeleri sık aranır.",
+      "one_cikan": []
+    },
+    "Bahçelievler": {
+      "metin": "D-100 karayolu, metrobüs ve metro hattı üzerinde bulunan Bahçelievler, ulaşım kolaylığı nedeniyle aileler için tercih edilen bir ilçedir. Ara katta, asansörlü ve otoparklı daireler ile cadde üzeri dükkânlar sık aranır.",
+      "one_cikan": []
+    },
+    "Bakırköy": {
+      "metin": "Marmara kıyısındaki Bakırköy; Ataköy, Yeşilköy ve Florya gibi köklü yerleşimleriyle sahil yaşamı ve güçlü ulaşım ağını bir araya getirir. Marmaray ve metro bağlantısı, deniz manzaralı daireler ve site içi konutlar en çok ilgi gören seçeneklerdir.",
+      "one_cikan": [
+        "Ataköy 1. Kısım",
+        "Yeşilköy",
+        "Yeşilyurt",
+        "Şenlikköy"
+      ]
+    },
+    "Bayrampaşa": {
+      "metin": "Şehrin merkezine yakın konumu ve metro bağlantısıyla Bayrampaşa, kısa mesafede iş ve alışveriş alanlarına ulaşmak isteyenlerin tercih ettiği bir ilçedir. Konut, dükkân ve küçük ölçekli ticari alanlara talep düzenlidir.",
+      "one_cikan": []
+    },
+    "Bağcılar": {
+      "metin": "Yoğun konut dokusu, atölye ve ticari alanlarıyla Bağcılar, tramvay ve metro bağlantılarına sahip merkezi bir ilçedir. Uygun bütçeli konutlar, dükkânlar ve kentsel dönüşüm kapsamındaki binalar en çok talep gören gayrimenkullerdir.",
+      "one_cikan": []
+    },
+    "Başakşehir": {
+      "metin": "Planlı yeni yerleşim alanlarıyla Başakşehir; Bahçeşehir ve Kayaşehir gibi bölgelerde site tipi konutların yoğun olduğu bir ilçedir. Şehir hastanesi ve metro hattı, hem aile konutu hem yatırım amaçlı taleplerde ilçeyi öne çıkarır.",
+      "one_cikan": [
+        "Bahçeşehir 1. Kısım",
+        "Bahçeşehir 2. Kısım",
+        "Kayabaşı",
+        "Başakşehir"
+      ]
+    },
+    "Beykoz": {
+      "metin": "Boğaz'ın Anadolu kıyısında, ormanlarla çevrili Beykoz; Kanlıca, Anadoluhisarı, Çubuklu ve Riva gibi semtleriyle sakin yaşam arayanların tercih ettiği bir ilçedir. Boğaz manzaralı yalılar, bahçeli müstakil evler ve villalar en çok talep gören gayrimenkullerdir.",
+      "one_cikan": [
+        "Kanlıca",
+        "Anadolu Hisarı",
+        "Çubuklu",
+        "Riva"
+      ]
+    },
+    "Beylikdüzü": {
+      "metin": "Marmara kıyısındaki Beylikdüzü, yeni yapılaşması ve site tipi konutlarıyla özellikle aileler tarafından tercih edilir. Metrobüs hattının son durağı olması, havuzlu site daireleri ve sosyal donatılı projeler en çok aranan seçeneklerdir.",
+      "one_cikan": []
+    },
+    "Beyoğlu": {
+      "metin": "Taksim, Galata, Cihangir ve Karaköy'ü kapsayan Beyoğlu, İstanbul'un tarihi ve kültürel merkezidir. Restore edilmiş tarihi daireler, dükkânlar, ofisler ve turizm odaklı ticari gayrimenkuller en çok talep görenler arasındadır.",
+      "one_cikan": [
+        "Cihangir",
+        "Kemankeş Karamustafapaşa",
+        "Şahkulu",
+        "Firuzağa"
+      ]
+    },
+    "Beşiktaş": {
+      "metin": "Boğaz kıyısındaki Beşiktaş; Levent, Etiler, Bebek ve Ortaköy gibi prestijli semtleriyle İstanbul'un en çok aranan bölgelerindendir. Boğaz manzaralı daireler, plaza katları ve iş merkezlerine yakın rezidanslar öne çıkan taleplerdir.",
+      "one_cikan": [
+        "Levent",
+        "Etiler",
+        "Bebek",
+        "Ortaköy"
+      ]
+    },
+    "Büyükçekmece": {
+      "metin": "Göl ve deniz kıyısında yer alan Büyükçekmece; Kumburgaz ve Mimarsinan gibi sahil bölgeleriyle yazlık, müstakil ev ve villa taleplerinin öne çıktığı bir ilçedir. Bahçeli konutlar ve imarlı arsalar sık aranır.",
+      "one_cikan": [
+        "Kumburgaz",
+        "Mimarsinan"
+      ]
+    },
+    "Çatalca": {
+      "metin": "İstanbul'un en geniş ilçelerinden Çatalca, kırsal dokusu ve köy yerleşimleriyle tarla, arsa, çiftlik ve müstakil ev arayanların öne çıkardığı bir bölgedir. Doğayla iç içe yaşam ve yatırım amaçlı arazi talepleri ağırlıktadır.",
+      "one_cikan": []
+    },
+    "Çekmeköy": {
+      "metin": "Ormanlarla çevrili Çekmeköy, site tipi konutları ve villa projeleriyle sakin bir yaşam arayanların tercih ettiği bir ilçedir. Metro bağlantısı, bahçeli konutlar ve aile dostu siteler en çok talep görenler arasındadır.",
+      "one_cikan": []
+    },
+    "Esenler": {
+      "metin": "Yoğun konut dokusuna sahip Esenler, kentsel dönüşüm projelerinin hız kazandığı ve uygun bütçeli konut arayanların öne çıktığı bir ilçedir. Yeni yapılan binalardaki daireler ile cadde üzeri dükkânlar düzenli talep görür.",
+      "one_cikan": []
+    },
+    "Esenyurt": {
+      "metin": "İstanbul'un en kalabalık ilçelerinden Esenyurt, çok sayıda yeni konut projesi ve uygun bütçeli seçenekleriyle hem oturum hem yatırım amaçlı taleplerin yoğun olduğu bir bölgedir. Site içi daireler ve cadde üzeri ticari alanlar sık aranır.",
+      "one_cikan": []
+    },
+    "Eyüpsultan": {
+      "metin": "Haliç kıyısındaki tarihi dokusu ile kuzeydeki Göktürk ve Kemerburgaz gibi ormanlık yerleşimleri bir arada barındıran Eyüpsultan, hem müstakil ev ve villa hem de site içi konut taleplerinin öne çıktığı bir ilçedir.",
+      "one_cikan": []
+    },
+    "Fatih": {
+      "metin": "Tarihi Yarımada'yı kapsayan Fatih, Sultanahmet, Aksaray ve Balat gibi semtleriyle turizm ve ticaretin merkezindedir. Dükkân, ofis, otel ve tarihi bina talepleri ile merkezi konumdaki daireler en çok aranan gayrimenkullerdir.",
+      "one_cikan": [
+        "Balat",
+        "Sultan Ahmet",
+        "Aksaray"
+      ]
+    },
+    "Gaziosmanpaşa": {
+      "metin": "Konut ağırlıklı yapısıyla Gaziosmanpaşa, kentsel dönüşüm projelerinin yoğun olduğu ve aile konutu arayanların tercih ettiği bir ilçedir. Yeni binalardaki daireler ve cadde üzeri dükkânlar düzenli talep görür.",
+      "one_cikan": []
+    },
+    "Güngören": {
+      "metin": "Merter tekstil bölgesine ev sahipliği yapan Güngören, merkezi konumu ve ticari hareketliliğiyle hem konut hem iş yeri taleplerinin öne çıktığı bir ilçedir. Ofis, showroom ve depo nitelikli alanlar ile aile daireleri sık aranır.",
+      "one_cikan": [
+        "Tozkoparan"
+      ]
+    },
+    "Kadıköy": {
+      "metin": "Anadolu Yakası'nın merkezi Kadıköy; Moda, Bağdat Caddesi çevresi, Fenerbahçe ve Göztepe gibi semtleriyle İstanbul'un en çok aranan ilçelerindendir. Marmaray, metro ve vapur bağlantıları sayesinde kiralık ve satılık daire talepleri yoğundur; kentsel dönüşüm de hareketlidir.",
+      "one_cikan": [
+        "Caferağa",
+        "Göztepe",
+        "Suadiye",
+        "Fenerbahçe"
+      ]
+    },
+    "Kartal": {
+      "metin": "Marmara kıyısındaki Kartal, sahil şeridi, metro ve Marmaray bağlantısıyla Anadolu Yakası'nın gelişen ilçelerindendir. Kentsel dönüşüm kapsamında yenilenen binalar, deniz manzaralı rezidanslar ve kat karşılığı arsa talepleri öne çıkar.",
+      "one_cikan": []
+    },
+    "Kağıthane": {
+      "metin": "Levent ve Şişli'deki iş merkezlerine yakınlığıyla Kağıthane, kentsel dönüşüm ve yeni rezidans projelerinin yoğun olduğu merkezi bir ilçedir. Metro bağlantısı, iş merkezlerine yürüme mesafesindeki daireler ve kiralık konutlar en çok aranan seçeneklerdir.",
+      "one_cikan": [
+        "Merkez",
+        "Seyrantepe",
+        "Çağlayan"
+      ]
+    },
+    "Küçükçekmece": {
+      "metin": "Küçükçekmece Gölü kıyısındaki ilçe; Halkalı, Atakent ve Sefaköy gibi bölgeleriyle yeni konut projelerinin ve aile konutu taleplerinin yoğun olduğu bir yerleşimdir. Marmaray'ın Halkalı bağlantısı ulaşımda öne çıkar.",
+      "one_cikan": [
+        "Halkalı Merkez",
+        "Atakent"
+      ]
+    },
+    "Maltepe": {
+      "metin": "Marmara kıyısındaki Maltepe, geniş sahil alanı, metro ve Marmaray bağlantısıyla aileler için tercih edilen bir ilçedir. Kentsel dönüşümle yenilenen binalardaki daireler ve sahile yakın konutlar en çok talep görenler arasındadır.",
+      "one_cikan": []
+    },
+    "Pendik": {
+      "metin": "Sabiha Gökçen Havalimanı'na ev sahipliği yapan Pendik, Marmaray ve hızlı tren bağlantısıyla Anadolu Yakası'nın önemli ulaşım noktalarındandır. Yeni konut projeleri, sahile yakın daireler ve havalimanı çevresindeki ticari alanlar öne çıkar.",
+      "one_cikan": []
+    },
+    "Sancaktepe": {
+      "metin": "Yeni konut projeleriyle hızla gelişen Sancaktepe, Samandıra ve çevresindeki site tipi yerleşimleriyle aile konutu arayanların tercih ettiği bir ilçedir. Metro bağlantısı ve uygun bütçeli yeni daireler sık aranır.",
+      "one_cikan": []
+    },
+    "Sarıyer": {
+      "metin": "Boğaz'ın kuzeyinde yer alan Sarıyer; Maslak iş merkezleri, İstinye, Tarabya ve Yeniköy kıyıları ile Zekeriyaköy'ün villa bölgelerini bir araya getirir. Boğaz manzaralı daireler, villalar ve plaza ofisleri en çok talep gören gayrimenkullerdir.",
+      "one_cikan": [
+        "Maslak",
+        "İstinye",
+        "Tarabya",
+        "Zekeriyaköy"
+      ]
+    },
+    "Silivri": {
+      "metin": "İstanbul'un batı ucunda, Marmara kıyısında yer alan Silivri; yazlık, müstakil ev, villa, arsa ve tarla taleplerinin öne çıktığı bir ilçedir. Sahile yakın konutlar ve bahçeli evler sık aranır.",
+      "one_cikan": []
+    },
+    "Sultanbeyli": {
+      "metin": "Konut ağırlıklı yapısıyla Sultanbeyli, uygun bütçeli daire ve imarlı arsa arayanların öne çıktığı bir ilçedir. Tek tapulu arsalar ve yeni yapılan binalardaki daireler düzenli talep görür.",
+      "one_cikan": []
+    },
+    "Sultangazi": {
+      "metin": "Konut ağırlıklı Sultangazi, kentsel dönüşüm projeleri ve uygun bütçeli daireleriyle aile konutu arayanların tercih ettiği bir ilçedir. Yeni binalardaki daireler ve cadde üzeri dükkânlar sık aranır.",
+      "one_cikan": []
+    },
+    "Şile": {
+      "metin": "Karadeniz kıyısındaki Şile, plajları ve Ağva gibi doğal yerleşimleriyle yazlık, villa, müstakil ev, arsa ve tarla taleplerinin öne çıktığı bir ilçedir. Doğayla iç içe yaşam ve hafta sonu evi arayanlar sık tercih eder.",
+      "one_cikan": [
+        "Ağva Merkez"
+      ]
+    },
+    "Şişli": {
+      "metin": "İş ve alışveriş merkezlerinin yoğun olduğu Şişli; Mecidiyeköy, Nişantaşı çevresi ve Fulya ile İstanbul'un ticari kalbindedir. Metro ve metrobüs bağlantısı sayesinde ofis, rezidans ve merkezi daire talepleri yoğundur.",
+      "one_cikan": [
+        "Mecidiyeköy",
+        "Teşvikiye",
+        "Fulya",
+        "Harbiye"
+      ]
+    },
+    "Tuzla": {
+      "metin": "Tersaneleri ve organize sanayi bölgeleriyle Tuzla, depo, atölye ve sanayi tipi gayrimenkul taleplerinin öne çıktığı bir ilçedir. Marmaray bağlantısı ve sahile yakın yeni konut projeleri de ilgi görür.",
+      "one_cikan": []
+    },
+    "Ümraniye": {
+      "metin": "İş merkezleri ve alışveriş merkezleriyle Ümraniye, Anadolu Yakası'nın en hareketli ilçelerindendir. Metro bağlantısı, ofis katları, site içi daireler ve kentsel dönüşüm kapsamındaki binalar en çok talep görenler arasındadır.",
+      "one_cikan": []
+    },
+    "Üsküdar": {
+      "metin": "Boğaz kıyısındaki Üsküdar; Çengelköy, Kuzguncuk, Beylerbeyi ve Altunizade gibi semtleriyle hem tarihi doku hem modern yaşam sunar. Marmaray, metro ve vapur bağlantıları sayesinde Boğaz manzaralı daireler ve merkezi konutlar yoğun talep görür.",
+      "one_cikan": [
+        "Çengelköy",
+        "Kuzguncuk",
+        "Beylerbeyi",
+        "Altunizade"
+      ]
+    },
+    "Zeytinburnu": {
+      "metin": "Marmara kıyısındaki Zeytinburnu; Marmaray, tramvay, metro ve metrobüs bağlantılarıyla ulaşımın en güçlü olduğu ilçelerdendir. Tekstil ve deri ticareti, kentsel dönüşüm projeleri ve sahile yakın yeni rezidanslar öne çıkar.",
+      "one_cikan": []
+    }
+  }
+}
