@@ -37,6 +37,31 @@
     });
   }
 
+  /* ---------- WhatsApp düğmesi başka düğmelerin üstüne binmesin ---------- */
+  var waBox = $("[data-wa]");
+  if (waBox) {
+    var AVOID = ".search-btn, form [type=submit], .btn-block, .filters-foot, .field, .done a, .consent-bar, .tcard-foot, .plan .btn, .actions .btn";
+    var ticking = false;
+    var checkOverlap = function () {
+      ticking = false;
+      var btn = $(".wa-btn", waBox); if (!btn || !waM || !waM.hidden) { waBox.classList.remove("away"); return; }
+      var r = btn.getBoundingClientRect(), pad = 8, hit = false;
+      var els = $$(AVOID);
+      for (var i = 0; i < els.length && !hit; i++) {
+        var q = els[i].getBoundingClientRect();
+        if (!q.width || !q.height) continue;
+        if (q.right > r.left - pad && q.left < r.right + pad && q.bottom > r.top - pad && q.top < r.bottom + pad) hit = true;
+      }
+      waBox.classList.toggle("away", hit);
+    };
+    var schedule = function () { if (!ticking) { ticking = true; requestAnimationFrame(checkOverlap); } };
+    window.addEventListener("scroll", schedule, { passive: true });
+    window.addEventListener("resize", schedule);
+    window.addEventListener("load", schedule);
+    window.__ieaWaCheck = schedule;
+    schedule();
+  }
+
   /* ---------- yerel depolama (favoriler) ---------- */
   function store(key, val) {
     try {
