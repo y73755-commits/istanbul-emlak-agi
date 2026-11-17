@@ -39,6 +39,10 @@ jobs:
         if: env.ATLA != '1'
         run: |
           set -euo pipefail
+          # Gizli ayara yanlışlıkla eklenen boşluk/metin temizlenir (adres boşluk içeremez).
+          DB_URL="$(printf '%s' "$DB_URL" | tr -d '\r' | sed -E 's/^[[:space:]]+//; s/[[:space:]].*$//')"
+          echo "::add-mask::$DB_URL"
+          case "$DB_URL" in postgresql://*@*/postgres) ;; *) echo "::error::SUPABASE_DB_URL biçimi hatalı (postgresql://...@.../postgres olmalı)."; exit 1;; esac
           mkdir -p yedek
           supabase db dump --db-url "$DB_URL" -f yedek/roller.sql --role-only
           supabase db dump --db-url "$DB_URL" -f yedek/sema.sql
