@@ -4,7 +4,7 @@ akışlarını tarayıcıda uçtan uca dener. Ağ çağrıları yerel olarak yan
 import asyncio, base64, json, time, re, urllib.parse
 from playwright.async_api import async_playwright
 
-BASE = "http://127.0.0.1:8765/istanbul-emlak-agi/"
+BASE = __import__("os").environ.get("TEST_BASE", "http://127.0.0.1:8765/")
 SB = "nmfttzejqkigcxdmwydt.supabase.co"
 TOTP_KODU = "654321"
 SONUC = []
@@ -179,7 +179,7 @@ class Sunucu:
             return await yanit(200, self.kullanici_json(k)) if k else await yanit(401, {"msg": "no"})
         if yol == "/auth/v1/factors" and req.method == "POST":
             k["faktor"] = {"id": "f1", "factor_type": "totp", "status": "unverified", "friendly_name": "test", "created_at": "2026-11-17T10:00:00Z", "updated_at": "2026-11-17T10:00:00Z"}
-            return await yanit(200, {"id": "f1", "type": "totp", "friendly_name": "test", "totp": {"qr_code": "data:image/svg+xml;utf-8,<svg xmlns='http://www.w3.org/2000/svg'/>", "secret": "TESTSECRET", "uri": "otpauth://totp/test"}})
+            return await yanit(200, {"id": "f1", "type": "totp", "friendly_name": "test", "totp": {"qr_code": '<svg xmlns="http://www.w3.org/2000/svg" width="45" height="45" viewBox="0 0 45 45"><path fill="#000000" d="M0 0h7v7H0z"/></svg>', "secret": "TESTSECRET", "uri": "otpauth://totp/test"}})
         if re.match(r"/auth/v1/factors/f1/challenge", yol):
             return await yanit(200, {"id": "c1", "type": "totp", "expires_at": int(time.time()) + 300})
         if re.match(r"/auth/v1/factors/f1/verify", yol):
@@ -365,6 +365,8 @@ async def main():
         await pg.click("[data-a-google]")
         await pg.wait_for_selector("input[name=kod]", timeout=10000)
         kayit("Yönetici: Google girişinden sonra iki adımlı doğrulama (QR) isteniyor; şifre yok", True)
+        qr_ok = await pg.evaluate("""async () => { const i = document.querySelector('.qr img'); if (!i) return 'img yok'; try { await i.decode(); } catch (e) { return 'decode hata: ' + i.src.slice(0, 80); } return i.naturalWidth > 0 && !document.querySelector('[data-yonetici]').innerText.includes('alt=') ? true : 'genislik ' + i.naturalWidth }""")
+        kayit("Yönetici: QR görseli bozulmadan yükleniyor (Supabase'in çift tırnaklı SVG biçimi)", qr_ok is True, "" if qr_ok is True else str(qr_ok))
         await pg.fill("input[name=kod]", "111111"); await pg.locator("input[name=kod]").press("Enter"); await pg.wait_for_timeout(700)
         kayit("Yönetici: yanlış doğrulama kodu reddediliyor", await pg.locator("[data-sekme]").count() == 0)
         await pg.fill("input[name=kod]", TOTP_KODU); await pg.locator("input[name=kod]").press("Enter")

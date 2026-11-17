@@ -65,9 +65,10 @@
       return Promise.all(eski.map(function (f) { return c.auth.mfa.unenroll({ factorId: f.id }); }));
     }).then(function () { return c.auth.mfa.enroll({ factorType: "totp", friendlyName: "Yönetici " + Date.now() }); }).then(function (r) {
       if (r.error) throw r.error;
-      var t = r.data.totp;
+      var t = r.data.totp, qr = String(t.qr_code || ""), m = qr.match(/^data:image\/svg\+xml;[^,]*,([\s\S]*)$/);
+      if (m && m[1].trim().charAt(0) === "<") qr = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(m[1]);
       kodSor(r.data.id, '<p>Hesabınızı korumak için iki adımlı doğrulamayı bir kez kurmanız gerekiyor. Telefonunuzdaki doğrulama uygulamasıyla bu kodu okutun:</p>' +
-        '<div class="qr"><img src="' + t.qr_code + '" alt="İki adımlı doğrulama QR kodu" width="180" height="180"></div>' +
+        '<div class="qr"><img src="' + esc(qr) + '" alt="İki adımlı doğrulama QR kodu" width="180" height="180"></div>' +
         '<p class="small muted">QR okutamıyorsanız uygulamaya bu anahtarı elle girin: <code>' + esc(t.secret) + "</code></p>");
     }).catch(hataGoster);
   }

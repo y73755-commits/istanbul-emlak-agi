@@ -1,6 +1,6 @@
 import asyncio, json
 from playwright.async_api import async_playwright
-BASE="http://127.0.0.1:8765/istanbul-emlak-agi/"
+BASE = __import__("os").environ.get("TEST_BASE", "http://127.0.0.1:8765/")
 AXE=open('/home/claude/axe/node_modules/axe-core/axe.min.js').read()
 SAYFALAR=["index.html","musteri-talepleri.html","emlakci-talepleri.html","portfoy-is-birligi.html","uyelik-paketleri.html","talep-olustur.html","emlakci-uyelik.html","uye-ol.html","giris.html","istanbul-ilceleri.html","ilce/kadikoy.html","hakkimizda.html","iletisim.html","kvkk-aydinlatma-metni.html"]
 async def main():

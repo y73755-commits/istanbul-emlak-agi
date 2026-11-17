@@ -1,7 +1,7 @@
 """Menü (aç/kapat/Escape/bağlantı/odak) ve harita ipucu (fare/dokunma) testleri; birden çok tarayıcı motoru."""
 import asyncio, sys
 from playwright.async_api import async_playwright
-BASE = "http://127.0.0.1:8765/istanbul-emlak-agi/"
+BASE = __import__("os").environ.get("TEST_BASE", "http://127.0.0.1:8765/")
 async def menu_test(b, ad, w, h):
     ctx = await b.new_context(viewport={"width": w, "height": h}, **({"has_touch": True, "is_mobile": True} if w < 800 and ad == "chromium" else {}))
     pg = await ctx.new_page(); await pg.goto(BASE + "index.html")

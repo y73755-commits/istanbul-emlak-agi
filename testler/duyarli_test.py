@@ -3,7 +3,7 @@ WhatsApp düğmesi çakışması, konsol hatası; menü ve harita etkileşimi.""
 import asyncio, json, sys
 from playwright.async_api import async_playwright
 
-BASE = "http://127.0.0.1:8765/istanbul-emlak-agi/"
+BASE = __import__("os").environ.get("TEST_BASE", "http://127.0.0.1:8765/")
 SAYFALAR = ["index.html", "musteri-talepleri.html", "emlakci-talepleri.html", "portfoy-is-birligi.html", "uyelik-paketleri.html",
             "talep-olustur.html", "emlakci-uyelik.html", "uye-ol.html", "giris.html", "hesabim.html", "yonetici.html",
             "istanbul-ilceleri.html", "ilce/kadikoy.html", "ilce/besiktas.html", "hakkimizda.html", "iletisim.html",
