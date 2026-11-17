@@ -502,7 +502,7 @@ dialog.modal::backdrop{background:rgba(5,8,16,.72);backdrop-filter:blur(3px);-we
 .stat[data-git]:hover{border-color:rgba(197,160,89,.5)}
 .stat strong{font-family:var(--serif);font-size:1.7rem;color:var(--gold)}
 .stat span{color:var(--muted);font-size:.84rem}
-.qr{display:block;width:200px;height:200px;margin:12px 0;background:#fff;border-radius:12px;padding:8px}
+.qr{display:block;width:288px;max-width:100%;aspect-ratio:1;margin:12px 0;background:#fff;border-radius:12px;padding:12px}.qr img{display:block;width:100%;height:100%;image-rendering:pixelated}.totp-anahtar{display:flex;flex-wrap:wrap;gap:8px;align-items:center}.totp-anahtar code{font-size:1rem;letter-spacing:.06em;word-break:break-all;user-select:all}
 .mah-list{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
 .mah{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;border:1px solid var(--line2);font-size:.82rem;color:var(--beige)}
 .mah button{background:none;border:0;color:var(--muted);cursor:pointer;font-size:1rem;min-width:24px;min-height:24px}

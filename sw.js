@@ -1,6 +1,6 @@
 // İstanbul Emlak Ağı — service worker (otomatik üretilir)
-const V = "iea-707cf91893";
-const CORE = ["./", "index.html", "cevrimdisi.html", "assets/css/style.css?v=f066364f", "assets/js/main.js?v=57d32b57", "assets/js/ilceler.js?v=b22fda2c",
+const V = "iea-4c616fc8fa";
+const CORE = ["./", "index.html", "cevrimdisi.html", "assets/css/style.css?v=df38d8de", "assets/js/main.js?v=57d32b57", "assets/js/ilceler.js?v=b22fda2c",
   "assets/fonts/manrope-latin-wght-normal.woff2", "assets/fonts/playfair-display-latin-wght-normal.woff2",
   "assets/icons/logo-44.webp", "assets/icons/icon-192.png"];
 self.addEventListener("install", e => { e.waitUntil(caches.open(V).then(c => c.addAll(CORE)).then(() => self.skipWaiting())); });

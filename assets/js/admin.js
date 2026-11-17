@@ -68,8 +68,15 @@
       var t = r.data.totp, qr = String(t.qr_code || ""), m = qr.match(/^data:image\/svg\+xml;[^,]*,([\s\S]*)$/);
       if (m && m[1].trim().charAt(0) === "<") qr = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(m[1]);
       kodSor(r.data.id, '<p>Hesabınızı korumak için iki adımlı doğrulamayı bir kez kurmanız gerekiyor. Telefonunuzdaki doğrulama uygulamasıyla bu kodu okutun:</p>' +
-        '<div class="qr"><img src="' + esc(qr) + '" alt="İki adımlı doğrulama QR kodu" width="180" height="180"></div>' +
-        '<p class="small muted">QR okutamıyorsanız uygulamaya bu anahtarı elle girin: <code>' + esc(t.secret) + "</code></p>");
+        '<div class="qr"><img src="' + esc(qr) + '" alt="İki adımlı doğrulama QR kodu" width="264" height="264"></div>' +
+        (t.uri ? '<p class="small"><a class="btn btn-ghost btn-sm" href="' + esc(t.uri) + '">Bu telefondaysanız: doğrulama uygulamasında aç</a></p>' : "") +
+        '<p class="small muted">QR okutamıyorsanız uygulamada “Kurulum anahtarı gir” seçip bu anahtarı yazın (tür: zamana dayalı):</p>' +
+        '<p class="totp-anahtar"><code data-anahtar>' + esc(String(t.secret || "").replace(/(.{4})/g, "$1 ").trim()) + '</code> <button class="btn btn-ghost btn-sm" type="button" data-kopyala>Kopyala</button></p>');
+      var kb = $("[data-kopyala]");
+      if (kb) kb.addEventListener("click", function () {
+        var yaz = navigator.clipboard && navigator.clipboard.writeText ? navigator.clipboard.writeText(t.secret) : Promise.reject();
+        yaz.then(function () { kb.textContent = "Kopyalandı"; }, function () { kb.textContent = "Elle seçip kopyalayın"; });
+      });
     }).catch(hataGoster);
   }
 
