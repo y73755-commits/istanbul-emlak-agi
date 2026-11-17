@@ -286,6 +286,7 @@ def page(path, title, desc, body, P="", active=None, schema=None, extra_js="", n
 <html lang="tr">
 <head>
 <meta charset="utf-8">
+<script>if(/\\.github\\.io$/.test(location.hostname))location.replace("{BASE_URL}"+location.pathname.replace(/^\\/istanbul-emlak-agi/,"")+location.search+location.hash)</script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>{e(full_title)}</title>
 <meta name="description" content="{e(desc)}">
