@@ -18,17 +18,14 @@
 
   /* ---------------- giriş + iki adımlı doğrulama ---------------- */
   function girisFormu(not) {
-    root.innerHTML = '<form class="card form admin-giris" data-a-giris><h2>Yönetici girişi</h2>' + (not ? '<p class="notice">' + esc(not) + "</p>" : "") +
-      '<div class="field"><label for="a-eposta">E-posta</label><input id="a-eposta" name="eposta" type="email" autocomplete="username" required></div>' +
-      '<div class="field"><label for="a-sifre">Şifre</label><input id="a-sifre" name="sifre" type="password" autocomplete="current-password" required></div>' +
-      '<p class="form-err" hidden data-err></p><button class="btn btn-gold btn-block" type="submit">Giriş yap</button>' +
-      '<p class="small muted">Giriş sonrasında telefonunuzdaki doğrulama uygulamasından (Google Authenticator, Microsoft Authenticator vb.) 6 haneli kod istenir.</p></form>';
-    $("[data-a-giris]").addEventListener("submit", function (ev) {
-      ev.preventDefault(); var f = ev.target;
-      c.auth.signInWithPassword({ email: f.eposta.value.trim(), password: f.sifre.value }).then(function (r) {
-        if (r.error) { var x = $("[data-err]", f); x.textContent = "E-posta veya şifre hatalı."; x.hidden = false; return; }
-        rolKontrol();
-      });
+    root.innerHTML = '<div class="card form admin-giris"><h2>Yönetici girişi</h2>' + (not ? '<p class="notice">' + esc(not) + "</p>" : "") +
+      '<button class="btn btn-google btn-lg btn-block" type="button" data-a-google>' + (CFG.googleG || "") + '<span>Google ile giriş yap</span></button>' +
+      '<p class="form-err" hidden data-err></p>' +
+      '<p class="small muted">Yalnızca yönetici yetkisi verilmiş Google hesabı panele girebilir. Girişten sonra telefonunuzdaki doğrulama uygulamasından (Google Authenticator, Microsoft Authenticator vb.) 6 haneli kod istenir.</p></div>';
+    var btn = $("[data-a-google]");
+    btn.addEventListener("click", function () {
+      btn.disabled = true;
+      A.googleGiris("yonetici.html").catch(function (e) { btn.disabled = false; var x = $("[data-err]", root); x.textContent = e.message; x.hidden = false; });
     });
   }
   function rolKontrol() {
@@ -168,8 +165,13 @@
     ["[data-f-durum]", "[data-f-tip]"].forEach(function (s) { $(s, el).addEventListener("change", yukle); }); $("[data-f-ara]", el).addEventListener("input", debounce(yukle)); yukle(); el._yukle = yukle;
   }
 
+  function waHatirlat(u) {
+    var t = A.e164(u.telefon || ""); if (!t) return "";
+    var m = "Merhaba " + (u.ad_soyad || "") + ", İstanbul Emlak Ağı üyeliğiniz " + gun(u.bitis) + " tarihinde sona eriyor. Uzatmak isterseniz bu mesaja yanıt verebilirsiniz.";
+    return '<a class="btn btn-gold btn-sm" target="_blank" rel="noopener" href="https://wa.me/' + t + "?text=" + encodeURIComponent(m) + '">WhatsApp ile hatırlat</a>';
+  }
   function uyelikler() {
-    var el = icerik('<div class="admin-filtre"><select data-f><option value="aktif">Aktif üyelikler</option><option value="biten">Süresi bitenler</option><option value="">Tüm kayıtlar</option></select></div><div data-liste></div>');
+    var el = icerik('<div data-yaklasan></div><div class="admin-filtre"><select data-f><option value="aktif">Aktif üyelikler</option><option value="biten">Süresi bitenler</option><option value="">Tüm kayıtlar</option></select></div><div data-liste></div>');
     var yukle = function () {
       A.rpc("admin_uyelikler", { p_emlakci: null }).then(function (l) {
         var f = $("[data-f]", el).value, simdi = Date.now();
@@ -189,6 +191,10 @@
       }).catch(hataGoster);
     };
     $("[data-f]", el).addEventListener("change", yukle); yukle(); el._yukle = yukle;
+    A.rpc("admin_hatirlatmalar").then(function (l) {
+      $("[data-yaklasan]", el).innerHTML = l.length ? '<div class="notice"><p><strong>Bitişi 7 gün içinde olan ' + l.length + " üyelik.</strong> Ücretli SMS kullanılmadığı için hatırlatmayı WhatsApp ile siz gönderirsiniz.</p></div>" +
+        l.map(function (u) { return '<div class="satir card"><div class="satir-ana"><div class="satir-ust"><span class="durum ' + (u.kalan_gun <= 3 ? "kirmizi" : "sari") + '">' + u.kalan_gun + " gün kaldı</span></div><h3>" + esc(u.ad_soyad || "") + (u.ofis_adi ? " · " + esc(u.ofis_adi) : "") + '</h3><p class="small muted">Bitiş: ' + gun(u.bitis) + " · " + esc(A.fmt.tel(u.telefon || "")) + '</p></div><div class="satir-btn">' + waHatirlat(u) + "</div></div>"; }).join("") : "";
+    }).catch(function () {});
   }
 
   function sikayetler() {
@@ -235,30 +241,49 @@
     c.from("ayarlar").select("*").then(function (r) {
       if (r.error) throw r.error;
       var a = {}; r.data.forEach(function (x) { a[x.anahtar] = x.deger; });
-      var w = a.whatsapp || {}, ana = a.ana_sayfa || {}, m = a.metinler || {}, sms = a.sms || {};
+      var w = a.whatsapp || {}, ana = a.ana_sayfa || {}, m = a.metinler || {}, acik = a.ucretli_erisim_aktif === true;
       var el = icerik('<form class="card form" data-ayar-form><h3 class="admin-h">İletişim</h3><div class="form-grid">' +
         '<div class="field"><label for="ay-wa">WhatsApp numarası (90 ile, boşluksuz)</label><input id="ay-wa" name="wa" inputmode="numeric" value="' + esc(w.numara || "") + '"></div>' +
         '<div class="field"><label for="ay-wag">Sitede görünen yazım</label><input id="ay-wag" name="wag" value="' + esc(w.gosterim || "") + '"></div></div>' +
         '<h3 class="admin-h">Üyelik ve talepler</h3><label class="check"><input type="checkbox" name="ucretli"' + (a.ucretli_erisim_aktif === true ? " checked" : "") + '><span><strong>Ücretli erişim açık</strong> — açıkken aktif ücretli üyeler vatandaş taleplerinin detayını ve iletişim bilgisini görür; kapalıyken kimse göremez (lansman dönemi).</span></label>' +
+        erisimTablosu(acik) +
         '<label class="check"><input type="checkbox" name="otomatik"' + (a.talep_otomatik_yayin === true ? " checked" : "") + '><span>Yeni talepler onay beklemeden yayınlansın</span></label>' +
-        '<div class="form-grid"><div class="field"><label for="ay-gun">Talep yayın süresi (gün)</label><input id="ay-gun" name="gun" inputmode="numeric" value="' + esc(a.talep_yayin_gun || 60) + '"></div>' +
-        '<div class="field"><label for="ay-sms">Onaylı SMS başlığı (İleti Merkezi)</label><input id="ay-sms" name="sms" maxlength="11" value="' + esc(sms.baslik || "APITEST") + '"></div></div>' +
+        '<div class="form-grid"><div class="field"><label for="ay-gun">Talep yayın süresi (gün)</label><input id="ay-gun" name="gun" inputmode="numeric" value="' + esc(a.talep_yayin_gun || 60) + '"></div></div>' +
         '<h3 class="admin-h">Ana sayfa metinleri</h3><div class="field"><label for="ay-b">Başlık</label><input id="ay-b" name="baslik" value="' + esc(ana.baslik || "") + '"></div>' +
         '<div class="field"><label for="ay-a">Alt açıklama</label><textarea id="ay-a" name="alt" rows="2">' + esc(ana.alt_aciklama || "") + "</textarea></div>" +
         '<h3 class="admin-h">Yasal metinler</h3><p class="small muted">Boş bırakılırsa sitedeki mevcut metin kullanılır. Başlık için satır başına “## ”, madde için “- ” yazın.</p>' +
         '<div class="field"><label for="ay-kvkk">KVKK aydınlatma metni</label><textarea id="ay-kvkk" name="kvkk" rows="8">' + esc(m.kvkk || "") + "</textarea></div>" +
         '<div class="field"><label for="ay-kul">Kullanım koşulları</label><textarea id="ay-kul" name="kullanim" rows="8">' + esc(m.kullanim || "") + "</textarea></div>" +
         '<button class="btn btn-gold" type="submit">Ayarları kaydet</button></form>');
+      var kutu = $('[name="ucretli"]', el);
+      kutu.addEventListener("change", function () { var t = $("[data-erisim-tablosu]", el); t.outerHTML = erisimTablosu(kutu.checked, true); });
       $("[data-ayar-form]", el).addEventListener("submit", function (ev) {
         ev.preventDefault(); var f = ev.target, wa = dg(f.wa.value);
         if (!/^90\d{10}$/.test(wa)) return msg("WhatsApp numarası 90 ile başlamalı ve 12 haneli olmalı (ör. 905520928085).", true);
         var isler = [["whatsapp", { numara: wa, gosterim: f.wag.value.trim() }], ["ucretli_erisim_aktif", f.ucretli.checked], ["talep_otomatik_yayin", f.otomatik.checked],
-          ["talep_yayin_gun", +dg(f.gun.value) || 60], ["sms", { baslik: f.sms.value.trim() || "APITEST" }], ["ana_sayfa", { baslik: f.baslik.value.trim(), alt_aciklama: f.alt.value.trim() }],
+          ["talep_yayin_gun", +dg(f.gun.value) || 60], ["ana_sayfa", { baslik: f.baslik.value.trim(), alt_aciklama: f.alt.value.trim() }],
           ["metinler", { kvkk: f.kvkk.value, kullanim: f.kullanim.value }]];
         Promise.all(isler.map(function (x) { return A.rpc("admin_ayar_kaydet", { p_anahtar: x[0], p_deger: x[1] }); }))
           .then(function () { sessionStorage.removeItem("iea-ayar"); msg("Ayarlar kaydedildi. Sitede birkaç dakika içinde görünür."); }).catch(hataGoster);
       });
     }).catch(hataGoster);
+  }
+
+  // Kim neyi görür: ücretli erişim kapalı/açık durumunda gerçek sistem kuralları (talep_detay fonksiyonuyla aynı)
+  function erisimTablosu(acik, onizleme) {
+    var V = "✓ Görür", X = "✗ Göremez";
+    var satir = [
+      ["Ziyaretçi (giriş yapmamış)", "Talep özetleri", X, X],
+      ["Vatandaş (kendi talebi)", "Kendi talebinin tamamı", V + " (yalnız kendi talebi)", X],
+      ["Onay bekleyen emlakçı", "Talep özetleri", X, X],
+      ["Onaylı emlakçı, ücretli üyeliği yok", "Özetler + iş birliği paylaşımlarının tamamı", X, V],
+      ["Onaylı emlakçı, aktif ücretli üye", "Özetler + iş birliği paylaşımları", acik ? V : X, V],
+      ["Üyeliği bitmiş emlakçı", "Özetler + iş birliği paylaşımları", X, V],
+      ["Yönetici", "Her şey", V, V]
+    ];
+    return '<div data-erisim-tablosu><p class="small"><strong>Şu anki durum' + (onizleme ? " (kaydetmeden önce önizleme)" : "") + ": ücretli erişim " + (acik ? "AÇIK" : "KAPALI") + "</strong></p>" +
+      '<div class="table-wrap" tabindex="0" role="region" aria-label="Rol ve erişim tablosu"><table class="admin-tablo"><thead><tr><th>Rol</th><th>Her zaman görür</th><th>Vatandaşın adı, telefonu, tam açıklaması</th><th>Emlakçı paylaşımlarının iletişim bilgisi</th></tr></thead><tbody>' +
+      satir.map(function (r) { return "<tr><th scope=\"row\">" + r[0] + "</th><td>" + r[1] + "</td><td>" + r[2] + "</td><td>" + r[3] + "</td></tr>"; }).join("") + "</tbody></table></div></div>";
   }
 
   function mahalleler() {
@@ -285,15 +310,12 @@
   }
 
   function kayitlar() {
-    var el = icerik('<h3 class="admin-h">İletişim bilgisi görüntülemeleri (son 500)</h3><div data-g></div><h3 class="admin-h">Yönetici işlemleri</h3><div data-y></div><h3 class="admin-h">SMS kayıtları</h3><div data-s></div>');
+    var el = icerik('<h3 class="admin-h">İletişim bilgisi görüntülemeleri (son 500)</h3><div data-g></div><h3 class="admin-h">Yönetici işlemleri</h3><div data-y></div>');
     A.rpc("admin_goruntulemeler", { p_talep: null }).then(function (l) {
       $("[data-g]", el).innerHTML = l.length ? '<div class="table-wrap"><table class="admin-tablo"><thead><tr><th>Zaman</th><th>Emlakçı</th><th>Talep</th></tr></thead><tbody>' + l.map(function (g) { return "<tr><td>" + saat(g.zaman) + "</td><td>" + esc(g.emlakci || "") + (g.ofis_adi ? " · " + esc(g.ofis_adi) : "") + "<br><small>" + esc(A.fmt.tel(g.telefon || "")) + "</small></td><td>" + esc(g.talep_no || "") + " · " + esc(g.talep_baslik || "") + "</td></tr>"; }).join("") + "</tbody></table></div>" : '<p class="muted">Kayıt yok.</p>';
     }).catch(hataGoster);
     c.from("yonetici_kayitlari").select("*").order("zaman", { ascending: false }).limit(200).then(function (r) {
       $("[data-y]", el).innerHTML = (r.data || []).length ? '<div class="table-wrap"><table class="admin-tablo"><thead><tr><th>Zaman</th><th>İşlem</th><th>Hedef</th><th>Ayrıntı</th></tr></thead><tbody>' + r.data.map(function (k) { return "<tr><td>" + saat(k.zaman) + "</td><td>" + esc(k.islem) + "</td><td>" + esc(k.hedef || "") + "</td><td><small>" + esc(JSON.stringify(k.detay || "")).slice(0, 160) + "</small></td></tr>"; }).join("") + "</tbody></table></div>" : '<p class="muted">Kayıt yok.</p>';
-    });
-    c.from("sms_kayitlari").select("*").order("zaman", { ascending: false }).limit(100).then(function (r) {
-      $("[data-s]", el).innerHTML = (r.data || []).length ? '<div class="table-wrap"><table class="admin-tablo"><thead><tr><th>Zaman</th><th>Tür</th><th>Telefon</th><th>Durum</th></tr></thead><tbody>' + r.data.map(function (k) { return "<tr><td>" + saat(k.zaman) + "</td><td>" + esc(k.tur) + "</td><td>" + esc(A.fmt.tel(k.telefon)) + "</td><td>" + (k.hata ? '<span class="red-text">' + esc(k.hata) + "</span>" : "Gönderildi") + "</td></tr>"; }).join("") + "</tbody></table></div>" : '<p class="muted">Kayıt yok.</p>';
     });
   }
 

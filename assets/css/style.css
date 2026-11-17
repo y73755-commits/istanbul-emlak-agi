@@ -506,3 +506,11 @@ dialog.modal::backdrop{background:rgba(5,8,16,.72);backdrop-filter:blur(3px);-we
 .mah-list{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
 .mah{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;border:1px solid var(--line2);font-size:.82rem;color:var(--beige)}
 .mah button{background:none;border:0;color:var(--muted);cursor:pointer;font-size:1rem;min-width:24px;min-height:24px}
+
+/* ---------- Google ile giriş ---------- */
+.btn-google{background:#fff;color:#1F1F1F;border:1px solid #DADCE0;font-weight:600}
+.btn-google:hover{background:#F8FAFC;color:#1F1F1F}
+.btn-google .g-ic{width:20px;height:20px;flex:none}
+.form-err.form-ok{background:rgba(31,175,90,.12);border-color:rgba(31,175,90,.4);color:#BBF7D0}
+.matrix-not{margin-top:10px}
+.admin-tablo tbody th{text-transform:none;letter-spacing:0;font-size:.88rem;color:var(--text);font-weight:600}

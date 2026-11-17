@@ -6,13 +6,13 @@ Son güncelleme: 17 Kasım 2026. Bu metin, hukuk danışmanımızın incelemesi 
 
 ## 2. Platformun işleyişi ve verilerinizin bize ulaşma yolu
 
-Sitedeki formlar (talep formu, emlakçı başvuru formu, iş birliği talep formu) bilgilerinizi sitenin sunucusuna kaydetmez. Formu doldurup gönder butonuna dokunduğunuzda bilgileriniz kendi cihazınızda bir WhatsApp mesajına dönüştürülür. Mesajı **siz gönderdiğinizde** bilgileriniz WhatsApp üzerinden Platform yönetimine ulaşır. Mesajı göndermezseniz hiçbir bilgi bize iletilmez.
+Talep formu, emlakçı başvuru formu ve iş birliği formu, Google hesabınızla giriş yaptıktan sonra gönderilir ve Platform'un veritabanına kaydedilir. Girişte Google'dan yalnızca adınız ve e-posta adresiniz alınır; Google şifrenizi Platform hiçbir zaman görmez. Telefon numaranızı iletişim bilgisi olarak siz yazarsınız; numara SMS ile doğrulanmaz. WhatsApp üzerinden bize yazdığınızda, bu yazışma da kişisel verilerinizin bize ulaştığı bir yoldur.
 
 ## 3. İşlenen kişisel veriler
 
 - **Vatandaşlar (talep sahipleri):** ad soyad, cep telefonu numarası, talebe ilişkin bilgiler (ilçe, mahalle, gayrimenkul türü, satılık/kiralık tercihi, bütçe, metrekare, oda sayısı, açıklama), isteğe bağlı olarak gönderdiğiniz fotoğraflar, onay kaydı (onay metni ve tarihi).
 - **Emlak danışmanları ve ofisler:** ad soyad, emlak ofisi adı, cep telefonu, e-posta adresi, hizmet verilen ilçeler, Taşınmaz Ticareti Yetki Belgesi numarası, isteğe bağlı profil fotoğrafı, üyelik ve ödeme kayıtları (paket, tutar, tarih).
-- **Tüm kullanıcılar:** WhatsApp yazışma içerikleri ve iletişim kayıtları.
+- **Tüm kullanıcılar:** Google hesabından alınan ad ve e-posta adresi, giriş kayıtları (tarih, oturum bilgisi), WhatsApp yazışma içerikleri ve iletişim kayıtları.
 
 ## 4. İşleme amaçları
 
@@ -33,7 +33,9 @@ Kişisel verileriniz KVKK'nın 5. maddesinde yer alan; bir sözleşmenin kurulma
 
 - **Emlak danışmanlarına:** Vatandaşların ad, telefon ve tam talep açıklaması yalnızca açık rıza ile, yönetici tarafından onaylanmış ve aktif ücretli üyeliği olan emlak danışmanlarıyla paylaşılır. Bir emlakçının hangi talebin iletişim bilgisine eriştiği kayıt altına alınır.
 - **Herkese açık yayın:** Talebinizin yalnızca özeti (başlık, tür, ilçe/mahalle, bütçe, oda/metrekare, kısa açıklama) sitede yayınlanır. Adınız ve telefonunuz yayınlanmaz.
-- **İletişim altyapısı:** Formlar WhatsApp üzerinden iletildiğinden, yazışmalar WhatsApp hizmet sağlayıcısının (Meta) altyapısında, yurt dışındaki sunucularda işlenebilir. Bu iletişim kanalını kullanmayı tercih ettiğinizde ilgili aktarım, kendi isteğinizle başlattığınız iletişimin gereği olarak gerçekleşir.
+- **Barındırma ve veritabanı:** Platform verileri, veritabanı hizmet sağlayıcısı Supabase'in Almanya'daki (Frankfurt) sunucularında saklanır. Site dosyaları Cloudflare altyapısı üzerinden sunulur. Bu nedenle verileriniz yurt dışına aktarılmaktadır; aktarım, KVKK'nın 9. maddesinde öngörülen güvencelerle yapılır.
+- **Giriş hizmeti:** Google ile giriş seçildiğinde kimlik doğrulama Google altyapısında yapılır.
+- **İletişim altyapısı:** WhatsApp üzerinden yazıştığınızda, yazışmalar WhatsApp hizmet sağlayıcısının (Meta) altyapısında, yurt dışındaki sunucularda işlenebilir. Bu iletişim kanalını kullanmayı tercih ettiğinizde ilgili aktarım, kendi isteğinizle başlattığınız iletişimin gereği olarak gerçekleşir.
 - **Yetkili kurumlar:** Kanunen yetkili kamu kurum ve kuruluşlarına, talep edilmesi hâlinde.
 
 ## 7. Saklama süresi

@@ -22,7 +22,7 @@
   function ciz() {
     var p = me, emlakci = p.rol === "emlakci", html = "";
     html += '<div class="panel-head card"><div><p class="kicker">' + (p.rol === "yonetici" ? "Yönetici" : emlakci ? "Emlak danışmanı" : "Vatandaş") + "</p><h2>Merhaba" + (p.ad_soyad ? ", " + esc(p.ad_soyad) : "") + "</h2>" +
-      '<p class="muted">' + esc(A.fmt.tel(p.telefon || "")) + (p.ofis_adi ? " · " + esc(p.ofis_adi) : "") + "</p></div>" +
+      '<p class="muted">' + esc(p.eposta || "") + (p.telefon ? " · " + esc(A.fmt.tel(p.telefon)) + (p.telefon_onayli ? "" : " (doğrulanmadı)") : "") + (p.ofis_adi ? " · " + esc(p.ofis_adi) : "") + "</p></div>" +
       '<div class="actions">' + (p.rol === "yonetici" ? '<a class="btn btn-gold btn-sm" href="' + P + 'yonetici.html">Yönetici paneli</a>' : "") + '<button class="btn btn-ghost btn-sm" type="button" data-cikis>Çıkış yap</button></div></div>';
 
     if (emlakci) html += emlakciDurum(p);
@@ -89,6 +89,7 @@
     return '<form class="card form" data-profil-form><div class="form-grid">' +
       '<div class="field"><label for="p-ad">Ad soyad</label><input id="p-ad" name="ad_soyad" maxlength="80" value="' + esc(p.ad_soyad || "") + '"></div>' +
       '<div class="field"><label for="p-eposta">E-posta</label><input id="p-eposta" name="eposta" type="email" maxlength="120" value="' + esc(p.eposta || "") + '"></div>' +
+      '<div class="field"><label for="p-tel">İletişim telefonu <span class="hint">(doğrulanmadı)</span></label><input id="p-tel" name="telefon" type="tel" inputmode="tel" placeholder="05xx xxx xx xx" maxlength="16" value="' + esc(p.telefon ? A.fmt.tel(p.telefon) : "") + '"></div>' +
       (p.rol === "emlakci" ? '<div class="field span2"><label for="p-ofis">Emlak ofisi</label><input id="p-ofis" name="ofis_adi" maxlength="100" value="' + esc(p.ofis_adi || "") + '"></div>' : "") +
       "</div>" + (p.rol === "emlakci" ? '<fieldset class="ilce-set"><legend>Hizmet verdiğiniz ilçeler</legend><div class="ilce-checks">' + ilce + "</div></fieldset>" +
       '<div class="foto-alan">' + (p.foto_url ? '<img src="' + esc(p.foto_url) + '" alt="Profil fotoğrafı" width="72" height="72">' : '<span class="foto-bos">Fotoğraf yok</span>') +
@@ -101,6 +102,11 @@
     f.addEventListener("submit", function (ev) {
       ev.preventDefault(); $("[data-err]", f).hidden = true; $("[data-ok]", f).hidden = true;
       var veri = { ad_soyad: f.ad_soyad.value.trim() || null, eposta: f.eposta.value.trim() || null };
+      if (f.telefon) {
+        var t = f.telefon.value.trim();
+        if (t && !A.e164(t)) { var xe = $("[data-err]", f); xe.textContent = "Telefon numarası geçersiz. 05XX XXX XX XX biçiminde yazın."; xe.hidden = false; return; }
+        veri.telefon = t ? A.e164(t) : null;
+      }
       if (f.ofis_adi) veri.ofis_adi = f.ofis_adi.value.trim() || null;
       if (me.rol === "emlakci") veri.hizmet_ilceleri = $$('input[name="ilceler"]:checked', f).map(function (x) { return x.value; });
       var dosya = $("[data-foto]", f) && $("[data-foto]", f).files[0];

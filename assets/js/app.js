@@ -31,7 +31,7 @@
   function sb() {
     if (sbPromise) return sbPromise;
     sbPromise = new Promise(function (res, rej) {
-      function make() { res(window.supabase.createClient(SB_URL, SB_KEY, { auth: { persistSession: true, autoRefreshToken: true, storageKey: STORE } })); }
+      function make() { res(window.supabase.createClient(SB_URL, SB_KEY, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, flowType: "pkce", storageKey: STORE } })); }
       if (window.supabase && window.supabase.createClient) return make();
       var s = document.createElement("script"); s.src = P + "assets/js/supabase.min.js?v=" + (CFG.sbVer || "1");
       s.onload = make; s.onerror = function () { rej(new Error("Bağlantı kütüphanesi yüklenemedi")); };
@@ -122,6 +122,7 @@
     var m = a.metinler || {};
     $$("[data-metin]").forEach(function (el) { var k = el.getAttribute("data-metin"); if (m[k] && m[k].trim()) el.innerHTML = md(m[k]); });
     CFG.ucretli = a.ucretli_erisim_aktif === true;
+    $$("[data-ucretli]").forEach(function (el) { el.hidden = (el.getAttribute("data-ucretli") === "acik") !== CFG.ucretli; });
   }
   function md(t) {
     var out = [], list = [], para = [];
@@ -252,45 +253,84 @@
     }).catch(function () {});
   }
 
-  /* ---------------- SMS ile telefon doğrulama ---------------- */
+  /* ---------------- Google ile giriş (ücretsiz; SMS yok) ---------------- */
   function e164(tel) { var d = digits(tel); if (d.indexOf("90") === 0 && d.length === 12) d = d.slice(2); if (d.charAt(0) === "0") d = d.slice(1); return d.length === 10 && d.charAt(0) === "5" ? "90" + d : null; }
   IEA.e164 = e164;
-  function telefonDogrula(tel) {
-    // Oturum varsa ve telefon aynıysa doğrulama gerekmez
+  var TASLAK = "iea-taslak:" + location.pathname;
+  function donusAdresi(sayfa) { return new URL(sayfa ? P + sayfa : location.pathname + location.search, location.href).href.replace(/[?&](code|error|error_code|error_description)=[^&]*/g, ""); }
+  function googleGiris(sayfa) {
+    return sb().then(function (c) {
+      return c.auth.signInWithOAuth({ provider: "google", options: { redirectTo: donusAdresi(sayfa), queryParams: { prompt: "select_account" } } });
+    }).then(function (r) { if (r && r.error) throw new Error("Google ile giriş başlatılamadı: " + r.error.message); });
+  }
+  IEA.googleGiris = googleGiris;
+  function taslakKaydet(form) {
+    if (!form) return;
+    var v = {};
+    $$("input, select, textarea", form).forEach(function (el) {
+      if (!el.name || el.type === "password") return;
+      if (el.type === "checkbox") { (v[el.name] = v[el.name] || []); if (el.checked) v[el.name].push(el.value); }
+      else v[el.name] = el.value;
+    });
+    try { sessionStorage.setItem(TASLAK, JSON.stringify(v)); } catch (e) {}
+  }
+  function taslakGeriYukle(form) {
+    var v; try { v = JSON.parse(sessionStorage.getItem(TASLAK) || "null"); } catch (e) {}
+    if (!v || !form) return false;
+    Object.keys(v).forEach(function (k) {
+      var els = $$('[name="' + k + '"]', form);
+      els.forEach(function (el) {
+        if (el.type === "checkbox") el.checked = (v[k] || []).indexOf(el.value) > -1;
+        else { el.value = v[k]; el.dispatchEvent(new Event("change", { bubbles: true })); }
+      });
+    });
+    // mahalle listesi ilçe seçilince dolar; değeri sonra tekrar ver
+    setTimeout(function () { if (v.mahalle && form.mahalle) form.mahalle.value = v.mahalle; }, 400);
+    try { sessionStorage.removeItem(TASLAK); } catch (e) {}
+    return true;
+  }
+  // Oturum gerekiyorsa formu saklayıp Google girişine yönlendirir. Oturum varsa hemen devam eder.
+  function girisGerekli(form, metin) {
     return IEA.oturum().then(function (s) {
-      if (s && s.user && s.user.phone === tel && s.user.phone_confirmed_at) return s;
-      return sb().then(function (c) {
-        return c.auth.signInWithOtp({ phone: tel }).then(function (r) {
-          if (r.error) throw new Error(/rate|seconds/i.test(r.error.message) ? "Çok sık kod istendi. Lütfen biraz bekleyip tekrar deneyin." : (/SMS servisi/.test(r.error.message) ? "SMS servisi henüz bağlı değil. Lütfen daha sonra tekrar deneyin veya WhatsApp'tan yazın." : r.error.message));
-          return new Promise(function (resolve, reject) {
-            modal('<h2>Telefon doğrulama</h2><p><strong>' + esc(telGoster(tel)) + "</strong> numarasına 6 haneli bir kod gönderdik. Kod 5 dakika geçerlidir.</p>" +
-              '<form class="form-stack" data-otp-form><div class="field"><label for="otp-kod">Doğrulama kodu</label><input id="otp-kod" name="kod" inputmode="numeric" autocomplete="one-time-code" maxlength="6" required pattern="[0-9]{6}"></div>' +
-              '<p class="form-err" hidden data-err></p><button class="btn btn-gold btn-block" type="submit">Doğrula ve devam et</button>' +
-              '<button class="link-mini" type="button" data-yeniden>Kodu tekrar gönder</button></form>');
-            var f = $("[data-otp-form]"), tamam = false;
-            f.addEventListener("submit", function (ev) {
-              ev.preventDefault();
-              var btn = $("[type=submit]", f); btn.disabled = true;
-              c.auth.verifyOtp({ phone: tel, token: digits(f.kod.value), type: "sms" }).then(function (v) {
-                btn.disabled = false;
-                if (v.error) { var x = $("[data-err]", f); x.textContent = "Kod hatalı veya süresi dolmuş."; x.hidden = false; return; }
-                tamam = true; IEA.kapat(); menuGuncelle(); resolve(v.data.session);
-              });
-            });
-            $("[data-yeniden]", f).addEventListener("click", function () {
-              c.auth.signInWithOtp({ phone: tel }).then(function (r2) { var x = $("[data-err]", f); x.textContent = r2.error ? "Lütfen biraz bekleyip tekrar deneyin." : "Yeni kod gönderildi."; x.hidden = false; });
-            });
-            dlg.addEventListener("close", function onc() { dlg.removeEventListener("close", onc); if (!tamam) reject(new Error("Doğrulama tamamlanmadı.")); });
-          });
+      if (s) return s;
+      taslakKaydet(form);
+      return new Promise(function (resolve, reject) {
+        modal('<h2>Google ile devam edin</h2><p>' + esc(metin || "Göndermek için Google hesabınızla giriş yapın.") + ' Yazdıklarınız bu cihazda saklandı; girişten sonra bu sayfaya döner ve <strong>bir kez daha Gönder</strong>e basarsınız.</p>' +
+          '<p class="small muted">Şifre ve SMS gerekmez. Google\'dan yalnızca adınız ve e-posta adresiniz alınır.</p>' +
+          '<button class="btn btn-google btn-lg btn-block" type="button" data-google-git>' + (CFG.googleG || "") + '<span>Google ile giriş yap</span></button><p class="form-err" hidden data-err></p>');
+        var b = $("[data-google-git]");
+        b.addEventListener("click", function () {
+          b.disabled = true;
+          googleGiris().catch(function (e) { b.disabled = false; var x = $("dialog.modal [data-err]"); x.textContent = e.message; x.hidden = false; });
         });
+        var err = new Error(""); err.yonlendirme = true;
+        dlg.addEventListener("close", function onc() { dlg.removeEventListener("close", onc); reject(err); });
       });
     });
   }
-  IEA.telefonDogrula = telefonDogrula;
+  IEA.girisGerekli = girisGerekli;
+  // Google'dan dönüş: kodu oturuma çevir, adresi temizle, taslağı geri yükle
+  var donusVar = /[?&](code|error_description)=/.test(location.search);
+  if (donusVar) {
+    var hataMesaj = new URLSearchParams(location.search).get("error_description");
+    sb().then(function (c) { return c.auth.getSession(); }).then(function (r) {
+      history.replaceState(null, "", donusAdresi());
+      if (hataMesaj) return modal("<h2>Giriş tamamlanamadı</h2><p>" + esc(hataMesaj) + "</p><p>Lütfen tekrar deneyin.</p>");
+      if (r && r.data && r.data.session) {
+        menuGuncelle();
+        var f = $("form[data-db-form]");
+        if (f && taslakGeriYukle(f)) {
+          var box = $("[data-err]", f); box.textContent = "Giriş yapıldı. Bilgileriniz geri yüklendi; kontrol edip göndermek için düğmeye basın."; box.hidden = false; box.classList.add("form-ok");
+          var gonder = $("[type=submit]", f); if (gonder) gonder.scrollIntoView({ block: "center" });
+        }
+        document.dispatchEvent(new CustomEvent("iea:giris"));
+      }
+    }).catch(function () {});
+  }
 
   /* ---------------- formlar ---------------- */
   function formHata(form, msg, el) {
-    var box = $("[data-err]", form); box.textContent = msg; box.hidden = false;
+    var box = $("[data-err]", form); box.classList.remove("form-ok"); if (!msg) { box.hidden = true; return; } box.textContent = msg; box.hidden = false;
     $$(".field.bad", form).forEach(function (f) { f.classList.remove("bad"); });
     if (el) { var fl = el.closest(".field"); if (fl) fl.classList.add("bad"); el.focus(); }
   }
@@ -328,13 +368,14 @@
     var tel = e164(f.tel.value); if (!tel) return formHata(f, "Lütfen 05 ile başlayan 11 haneli cep telefonu numaranızı yazın.", f.tel);
     if (!f.onay.checked) return formHata(f, "Devam etmek için onay kutusunu işaretleyin.", f.onay);
     bekle(f, true);
-    var veri = talepVerisi(f); veri.ad_soyad = f.ad.value.trim(); veri.riza = true;
+    var veri = talepVerisi(f); veri.ad_soyad = f.ad.value.trim(); veri.telefon = tel; veri.riza = true;
     veri.riza_metni = "İletişim bilgilerimin, platformun ücretli üyesi olan emlak danışmanlarıyla paylaşılmasına onay veriyorum. KVKK aydınlatma metnini okudum.";
-    telefonDogrula(tel).then(function () { return rpc("talep_olustur", { p: veri }); }).then(function (r) {
+    girisGerekli(f, "Talebinizi göndermek için Google hesabınızla giriş yapın.").then(function () { return rpc("talep_olustur", { p: veri }); }).then(function (r) {
+      if (!r || !r.no) throw new Error("Talep kaydedilemedi. Lütfen tekrar deneyin.");
       bekle(f, false);
       basari(f, "<h2>Talebiniz alındı: " + esc(r.no) + "</h2><p>" + (r.durum === "yayinda" ? "Talebiniz yayına alındı." : "Talebiniz kontrol edildikten sonra özet olarak yayınlanacak.") +
         ' Talebinizi <a class="link-gold" href="' + P + 'hesabim.html">Hesabım</a> sayfasından görüntüleyebilir, düzenleyebilir veya kapatabilirsiniz.</p>');
-    }).catch(function (e) { bekle(f, false); formHata(f, e.message); });
+    }).catch(function (e) { bekle(f, false); formHata(f, e.yonlendirme ? "" : e.message); });
   });
 
   // Emlakçı başvurusu
@@ -348,12 +389,13 @@
     if (!ilceler.length) return formHata(f, "Lütfen hizmet verdiğiniz en az bir ilçe seçin.", $('input[name="ilceler"]', f));
     if (!f.onay.checked) return formHata(f, "Devam etmek için onay kutusunu işaretleyin.", f.onay);
     bekle(f, true);
-    telefonDogrula(tel).then(function () {
-      return rpc("emlakci_basvur", { p: { ad_soyad: f.ad.value.trim(), ofis_adi: f.ofis.value.trim(), eposta: f.eposta.value.trim(), yetki_belge_no: f.yetki.value.trim(), hizmet_ilceleri: ilceler, riza_metni: "KVKK aydınlatma metnini okudum, kullanım koşullarını kabul ediyorum." } });
-    }).then(function () {
+    girisGerekli(f, "Başvurunuzu göndermek için Google hesabınızla giriş yapın.").then(function () {
+      return rpc("emlakci_basvur", { p: { ad_soyad: f.ad.value.trim(), ofis_adi: f.ofis.value.trim(), eposta: f.eposta.value.trim(), telefon: tel, yetki_belge_no: f.yetki.value.trim(), hizmet_ilceleri: ilceler, riza_metni: "KVKK aydınlatma metnini okudum, kullanım koşullarını kabul ediyorum." } });
+    }).then(function (p) {
+      if (!p || p.durum !== "beklemede") throw new Error("Başvuru kaydedilemedi. Lütfen tekrar deneyin.");
       bekle(f, false);
       basari(f, "<h2>Başvurunuz alındı</h2><p>Yetki belgeniz ve bilgileriniz kontrol edildikten sonra hesabınız onaylanacak. Durumu <a class=\"link-gold\" href=\"" + P + "hesabim.html\">Hesabım</a> sayfasından takip edebilirsiniz.</p>");
-    }).catch(function (e) { bekle(f, false); formHata(f, e.message); });
+    }).catch(function (e) { bekle(f, false); formHata(f, e.yonlendirme ? "" : e.message); });
   });
 
   // Emlakçı iş birliği paylaşımı (yalnızca onaylı emlakçı)
@@ -377,6 +419,7 @@
       bekle(f, true);
       var veri = talepVerisi(f); veri.riza = true; veri.riza_metni = "Paylaşım özetinin yayınlanmasını ve iletişim bilgilerimin onaylı emlakçılarla paylaşılmasını kabul ediyorum.";
       rpc("talep_olustur", { p: veri }).then(function (r) {
+        if (!r || !r.no) throw new Error("Paylaşım kaydedilemedi. Lütfen tekrar deneyin.");
         bekle(f, false);
         basari(f, "<h2>Paylaşımınız alındı: " + esc(r.no) + "</h2><p>Kontrol edildikten sonra emlakçı talepleri arasında yayınlanacak. <a class=\"link-gold\" href=\"" + P + "hesabim.html\">Hesabım</a></p>");
       }).catch(function (e) { bekle(f, false); formHata(f, e.message); });
@@ -413,16 +456,17 @@
   }
 
   /* ---------------- giriş sayfası ---------------- */
-  var fG = $("form[data-giris]");
-  if (fG) {
+  var gBox = $("[data-giris]");
+  if (gBox) {
     var donus = new URLSearchParams(location.search).get("donus") || "hesabim.html";
     if (!/^[a-z0-9\-\/]+\.html(\?.*)?$/i.test(donus)) donus = "hesabim.html";
-    if (oturumVarGibi()) IEA.oturum().then(function (s) { if (s) location.replace(P + donus); });
-    fG.addEventListener("submit", function (ev) {
-      ev.preventDefault(); $("[data-err]", fG).hidden = true;
-      var tel = e164(fG.tel.value); if (!tel) return formHata(fG, "Lütfen 05 ile başlayan 11 haneli cep telefonu numaranızı yazın.", fG.tel);
-      bekle(fG, true);
-      telefonDogrula(tel).then(function () { location.replace(P + donus); }).catch(function (e) { bekle(fG, false); formHata(fG, e.message); });
+    if (oturumVarGibi() && !donusVar) IEA.oturum().then(function (s) { if (s) location.replace(P + donus); });
+    document.addEventListener("iea:giris", function () { location.replace(P + donus); });
+    $$("[data-google-giris]", gBox).forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        btn.disabled = true; $("[data-err]", gBox).hidden = true;
+        googleGiris(donus).catch(function (e) { btn.disabled = false; var x = $("[data-err]", gBox); x.textContent = e.message; x.hidden = false; });
+      });
     });
   }
 

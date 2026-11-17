@@ -153,6 +153,11 @@ I = {
  "menu": svg(f'<path {ST} d="M4 7h16M4 12h16M4 17h16"/>'),
 }
 
+GOOGLE_G = ('<svg class="g-ic" viewBox="0 0 48 48" aria-hidden="true" focusable="false"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"/>'
+            '<path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/>'
+            '<path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-7.9l-6.5 5C9.5 39.6 16.2 44 24 44z"/>'
+            '<path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z"/></svg>')
+
 def logo(P):
     """Görsel paketindeki logo (kaynak/logo → assets/icons/logo-44/88.webp, tools/gorselleri_hazirla.py)."""
     return (f'<a class="logo" href="{P}index.html" aria-label="{e(SITE)} ana sayfa">'
@@ -275,7 +280,7 @@ def page(path, title, desc, body, P="", active=None, schema=None, extra_js="", n
     cfg = json.dumps({"base": BASE_PATH, "wa": C["whatsapp"], "ga4": D.get("olcum", {}).get("ga4_id", ""), "yayinGun": YAYIN_GUN,
                       "bugun": TODAY.isoformat(), "sbUrl": SB["url"], "sbKey": SB["anahtar"], "sbVer": SB_VER,
                       "kod": KOD, "ikon": {k: I[k] for k in ("heart", "pin", "lock", "check", "wa")},
-                      "ilceListesi": [i["ad"] for i in ILCELER], "ucretliOzellik": U["ucretli_ozellikler"]},
+                      "ilceListesi": [i["ad"] for i in ILCELER], "ucretliOzellik": U["ucretli_ozellikler"], "googleG": GOOGLE_G},
                      ensure_ascii=False).replace("</", "<\\/")
     html = f'''<!doctype html>
 <html lang="tr">
@@ -479,18 +484,21 @@ KUTULAR = [
 def kim_ne_gorur():
     rows = [
         ("Vatandaş taleplerinin özeti (başlık, tür, ilçe/mahalle, bütçe, kısa açıklama)", "yes", "yes", "yes"),
-        ("Vatandaş taleplerinin tam açıklaması ve iletişim bilgisi", "no", "no", "yes"),
+        ("Vatandaş taleplerinin tam açıklaması ve iletişim bilgisi", "no", "no", "paid"),
         ("Emlakçı iş birliği paylaşımları (tam detay ve emlakçının iletişimi)", "no", "yes", "yes"),
         ("İş birliği paylaşımı yapma", "no", "yes", "yes"),
         ("Filtreleme ve favorilere ekleme", "part", "yes", "yes"),
     ]
     sym = {"yes": f'<span class="ok">{I["check"]}<span class="sr">Görür</span></span>',
            "no": f'<span class="no">{I["x"]}<span class="sr">Göremez</span></span>',
-           "part": '<span class="part">Sınırlı</span>'}
+           "part": '<span class="part">Sınırlı</span>',
+           "paid": (f'<span class="ok" data-ucretli="acik"{"" if PAID else " hidden"}>{I["check"]}<span class="sr">Görür</span></span>'
+                    f'<span class="part" data-ucretli="kapali"{" hidden" if PAID else ""}>Paket satışı başlayınca</span>')}
     body = "".join(f'<tr><th scope="row">{e(r[0])}</th><td>{sym[r[1]]}</td><td>{sym[r[2]]}</td><td>{sym[r[3]]}</td></tr>' for r in rows)
     return f'''<div class="table-wrap" tabindex="0" role="region" aria-label="Üyelik karşılaştırma tablosu"><table class="matrix">
 <thead><tr><th scope="col">Bilgi</th><th scope="col">Ziyaretçi / Vatandaş</th><th scope="col">Onaylı emlakçı</th><th scope="col">Onaylı emlakçı <span>(ücretli, aktif)</span></th></tr></thead>
-<tbody>{body}</tbody></table></div>'''
+<tbody>{body}</tbody></table></div>
+<p class="small muted matrix-not">Talep sahibi kendi talebinin tüm bilgilerini, yönetici ise bütün talepleri her zaman görür. <span data-ucretli="kapali"{" hidden" if PAID else ""}><strong>Şu an lansman dönemi:</strong> paket satışı başlamadığı için vatandaşların iletişim bilgisi hiçbir emlakçıya açılmıyor.</span></p>'''
 
 def build_index():
     P = ""
@@ -749,7 +757,7 @@ def build_forms():
     kvkk = '<a href="kvkk-aydinlatma-metni.html" target="_blank">KVKK aydınlatma metnini</a>'
     # --- vatandaş talep formu
     ph, sch = page_head(P, "Ücretsiz talep", "Gayrimenkul talebinizi oluşturun",
-        "Üye olmanıza gerek yok. Formu doldurun, telefonunuzu SMS koduyla doğrulayın; talebiniz kontrol edildikten sonra özet olarak yayınlanır. Adınız ve telefonunuz herkese açık yayınlanmaz.",
+        "Ücretsizdir. Formu doldurun ve Google hesabınızla tek tıkla giriş yapın; talebiniz kontrol edildikten sonra özet olarak yayınlanır. Adınız ve telefonunuz herkese açık yayınlanmaz.",
         None, [("index.html", "Ana Sayfa"), (None, "Talep Oluştur")])
     form = f'''<form class="card form" data-db-form="vatandas" novalidate>
   {talep_alanlari("v", "vatandas")}
@@ -758,15 +766,15 @@ def build_forms():
   <label class="check consent"><input type="checkbox" name="onay" required>
     <span>İletişim bilgilerimin, platformun ücretli üyesi olan emlak danışmanlarıyla paylaşılmasına onay veriyorum. {kvkk} okudum.</span></label>
   <p class="form-err" role="alert" hidden data-err></p>
-  <button class="btn btn-gold btn-lg btn-block" type="submit">{I["check"]}<span>SMS koduyla doğrula ve gönder</span></button>
-  <p class="form-note">{I["lock"]} Telefonunuza 6 haneli bir doğrulama kodu gönderilir. Talebinizi daha sonra <a class="link-gold" href="hesabim.html">Hesabım</a> sayfasından görüntüleyebilir, düzenleyebilir veya kapatabilirsiniz.</p>
+  <button class="btn btn-gold btn-lg btn-block" type="submit">{I["check"]}<span>Talebimi gönder</span></button>
+  <p class="form-note">{I["lock"]} Göndermeden önce Google hesabınızla giriş yapmanız istenir; yazdıklarınız kaybolmaz. Telefon numaranız yalnızca iletişim içindir, SMS gönderilmez. Talebinizi daha sonra <a class="link-gold" href="hesabim.html">Hesabım</a> sayfasından görüntüleyebilir, düzenleyebilir veya kapatabilirsiniz.</p>
 </form>
 {basari_paneli()}'''
     aside = f'''<aside class="side">
   <div class="card side-card">
     <h2>Nasıl ilerler?</h2>
     <ol class="numlist">
-      <li>Formu doldurur, telefonunuzu SMS koduyla doğrularsınız.</li>
+      <li>Formu doldurur, Google hesabınızla giriş yaparsınız.</li>
       <li>Talebiniz kontrol edilir ve özet hâliyle yayınlanır.</li>
       <li>Onaylı emlak danışmanları size uygun seçeneklerle ulaşır.</li>
       <li>Talebiniz sonuçlandığında Hesabım sayfasından kapatır veya kalıcı olarak silersiniz.</li>
@@ -776,7 +784,7 @@ def build_forms():
     <h2>Herkese açık görünen</h2>
     <p>Başlık, talep türü, ilçe/mahalle, bütçe, oda/m² ve kısa açıklama.</p>
     <h2>Herkese açık görünmeyen</h2>
-    <p>Adınız, telefonunuz ve detaylı açıklamanız. Bunlar yalnızca aktif ücretli üyeliği olan onaylı emlakçılara, sunucudan açılır.</p>
+    <p>Adınız, telefonunuz ve detaylı açıklamanız. Bunlar yalnızca aktif ücretli üyeliği olan onaylı emlakçılara, sunucudan açılır.<span data-ucretli="kapali"{" hidden" if PAID else ""}> Lansman döneminde paket satışı başlamadığı için şu an hiçbir emlakçıya açılmaz.</span></p>
   </div>
 </aside>'''
     body = f'''{ph}
@@ -807,8 +815,8 @@ def build_forms():
   <label class="check consent"><input type="checkbox" name="onay" required>
     <span>{kvkk} okudum; <a href="kullanim-kosullari.html" target="_blank">kullanım koşullarını</a> kabul ediyorum.</span></label>
   <p class="form-err" role="alert" hidden data-err></p>
-  <button class="btn btn-gold btn-lg btn-block" type="submit">{I["check"]}<span>SMS koduyla doğrula ve başvur</span></button>
-  <p class="form-note">{I["lock"]} Telefonunuza 6 haneli bir doğrulama kodu gönderilir. Başvurunuzun durumunu Hesabım sayfasından takip edersiniz.</p>
+  <button class="btn btn-gold btn-lg btn-block" type="submit">{I["check"]}<span>Başvurumu gönder</span></button>
+  <p class="form-note">{I["lock"]} Göndermeden önce Google hesabınızla giriş yapmanız istenir; yazdıklarınız kaybolmaz. Telefonunuz iletişim içindir, SMS gönderilmez. Başvurunuzun durumunu Hesabım sayfasından takip edersiniz.</p>
 </form>
 {basari_paneli()}'''
     aside = f'''<aside class="side">
@@ -820,7 +828,7 @@ def build_forms():
   <div class="card side-card">
     <h2>Onay süreci</h2>
     <ol class="numlist">
-      <li>Telefonunuzu doğrulayıp başvurunuzu gönderirsiniz.</li>
+      <li>Google hesabınızla giriş yapıp başvurunuzu gönderirsiniz.</li>
       <li>Yetki belgeniz ve bilgileriniz yönetici tarafından kontrol edilir.</li>
       <li>Onaylandığınızda hesabınız aktif olur, iş birliği paylaşımı yapabilirsiniz.</li>
     </ol>
@@ -834,7 +842,7 @@ def build_forms():
 
     # --- üye ol (yönlendirme)
     ph, sch = page_head(P, "Giriş yap / Üye ol", "Platforma katılın",
-        "Vatandaşlar ücretsiz talep oluşturur, emlak danışmanları yetki belgesiyle başvurur. Daha önce kayıt olduysanız telefonunuzla giriş yapın.",
+        "Vatandaşlar ücretsiz talep oluşturur, emlak danışmanları yetki belgesiyle başvurur. Giriş Google hesabınızla yapılır; şifre ve SMS gerekmez.",
         None, [("index.html", "Ana Sayfa"), (None, "Üye Ol")])
     body = f'''{ph}
 <section class="sec sec-tight">
@@ -843,8 +851,8 @@ def build_forms():
       <a class="join-card" href="giris.html">
         <span class="step-ic">{I["user"]}</span>
         <h2>Giriş yap</h2>
-        <p>Daha önce talep oluşturduysanız veya emlakçı olarak başvurduysanız telefonunuza gelen kodla giriş yapın.</p>
-        <span class="link-gold">Telefonla giriş{I["arrow"]}</span>
+        <p>Taleplerinizi, başvurunuzu ve üyeliğinizi görmek için Google hesabınızla giriş yapın.</p>
+        <span class="link-gold">Google ile giriş{I["arrow"]}</span>
       </a>
       <a class="join-card" href="talep-olustur.html">
         <span class="step-ic">{I["home"]}</span>
@@ -861,23 +869,22 @@ def build_forms():
     </div>
   </div>
 </section>'''
-    page("uye-ol.html", "Giriş Yap / Üye Ol", "Vatandaşlar ücretsiz talep oluşturur, emlak danışmanları yetki belgesiyle başvurup iş birliği ağına katılır. Kayıtlı üyeler telefonla giriş yapar.",
+    page("uye-ol.html", "Giriş Yap / Üye Ol", "Vatandaşlar ücretsiz talep oluşturur, emlak danışmanları yetki belgesiyle başvurup iş birliği ağına katılır. Üyeler Google hesabıyla giriş yapar.",
          body, P, None, schema=sch)
 
     # --- giriş
-    ph, sch = page_head(P, "Üye girişi", "Telefonunuzla giriş yapın",
-        "Şifre gerekmez. Telefon numaranıza gelen 6 haneli kodla giriş yapın; taleplerinizi, başvurunuzu ve üyeliğinizi Hesabım sayfasından yönetin.",
+    ph, sch = page_head(P, "Üye girişi", "Google hesabınızla giriş yapın",
+        "Şifre ve SMS gerekmez. Google hesabınızla giriş yapın; taleplerinizi, başvurunuzu ve üyeliğinizi Hesabım sayfasından yönetin.",
         None, [("index.html", "Ana Sayfa"), (None, "Giriş")])
     body = f'''{ph}
 <section class="sec sec-tight"><div class="wrap narrow-sm">
-  <form class="card form" data-giris novalidate>
-    {field("Cep telefonu", '<input id="g-tel" name="tel" type="tel" required autocomplete="tel" inputmode="tel" placeholder="05xx xxx xx xx" data-phone>', fid="g-tel")}
+  <div class="card form" data-giris>
+    <button class="btn btn-google btn-lg btn-block" type="button" data-google-giris>{GOOGLE_G}<span>Google ile giriş yap</span></button>
     <p class="form-err" role="alert" hidden data-err></p>
-    <button class="btn btn-gold btn-lg btn-block" type="submit">{I["check"]}<span>SMS kodu gönder</span></button>
-    <p class="form-note">{I["lock"]} Hesabınız yoksa ilk girişte otomatik oluşturulur. Talep oluşturmak için <a class="link-gold" href="talep-olustur.html">buraya</a>, emlakçı başvurusu için <a class="link-gold" href="emlakci-uyelik.html">buraya</a> tıklayın.</p>
-  </form>
+    <p class="form-note">{I["lock"]} Hesabınız yoksa ilk girişte otomatik oluşturulur. Google'dan yalnızca adınız ve e-posta adresiniz alınır. Talep oluşturmak için <a class="link-gold" href="talep-olustur.html">buraya</a>, emlakçı başvurusu için <a class="link-gold" href="emlakci-uyelik.html">buraya</a> tıklayın.</p>
+  </div>
 </div></section>'''
-    page("giris.html", "Üye Girişi", "İstanbul Emlak Ağı üye girişi: telefon numaranıza gelen SMS koduyla şifresiz giriş yapın.", body, P, None, schema=sch)
+    page("giris.html", "Üye Girişi", "İstanbul Emlak Ağı üye girişi: Google hesabınızla şifresiz ve ücretsiz giriş yapın.", body, P, None, schema=sch)
 
     # --- hesabım
     body = f'''<section class="page-head"><div class="wrap ph-in"><p class="kicker">Hesabım</p><h1>Hesabım</h1></div></section>
@@ -988,7 +995,7 @@ def build_paketler():
                "Ödeme bilgileri size WhatsApp üzerinden iletilir. Sitede kart veya online ödeme alınmaz.",
                "Ödemenizi yaparsınız; ödeme yönetici tarafından kontrol edilir.",
                "Üyeliğiniz yönetici tarafından manuel olarak açılır; başlangıç ve bitiş tarihi kaydedilir.",
-               "Bitişe 3 gün kala size hatırlatma yapılır.",
+               "Bitişe 3 gün kala WhatsApp üzerinden hatırlatma yapılır.",
                "Süre dolduğunda detay erişimi otomatik olarak kapanır; dilerseniz uzatabilirsiniz."]
     ph, sch = page_head(P, "Üyelik paketleri", "Emlakçı üyelik paketleri",
         "Ücretsiz iş birliği üyeliğiyle ağa katılın; vatandaş taleplerinin tam detayı ve iletişim bilgisi için aylık veya yıllık pakete geçin. Ödemeler WhatsApp üzerinden, manuel olarak alınır.",
@@ -1022,7 +1029,7 @@ def build_paketler():
 # ------------------------------------------------------------------ HAKKIMIZDA + İLETİŞİM
 SSS = [
     ("İstanbul Emlak Ağı bir ilan sitesi mi?", "Hayır. Burası bir talep ve iş birliği platformudur. Vatandaşlar ne aradığını yazar, emlak danışmanları bu taleplere uygun portföylerle ulaşır; emlakçılar da kendi aralarında portföy ve müşteri paylaşır."),
-    ("Vatandaşlar için ücret var mı?", "Hayır. Vatandaşlar talep oluşturmak için hiçbir ücret ödemez ve üye olmak zorunda değildir."),
+    ("Vatandaşlar için ücret var mı?", "Hayır. Vatandaşlar talep oluşturmak için hiçbir ücret ödemez. Talep göndermek için Google hesabıyla giriş yapmak yeterlidir; şifre veya SMS gerekmez."),
     ("Adım ve telefonum herkese açık mı olacak?", "Hayır. Yayında yalnızca talebinizin özeti görünür. Adınız, telefonunuz ve tam açıklamanız yalnızca yönetici tarafından onaylanmış, aktif ücretli üyeliği olan emlak danışmanlarıyla, açık onayınıza dayanarak paylaşılır."),
     ("Talebim ne kadar süre yayında kalır?", f"Talepler {YAYIN_GUN} gün yayında kalır, süre dolunca otomatik olarak yayından kalkar. Daha önce kapatmak veya silinmesini istemek için WhatsApp'tan yazmanız yeterlidir."),
     ("Kimler emlakçı üyesi olabilir?", "Taşınmaz Ticareti Yetki Belgesi olan emlak danışmanları ve emlak ofisleri başvurabilir. Hesaplar yönetici onayından sonra aktif olur."),

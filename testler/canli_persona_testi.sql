@@ -1,11 +1,11 @@
--- Canlı veritabanında rol bazlı erişim testi.
+-- Canlı veritabanında rol bazlı erişim testi (Google/e-posta girişi, SMS yok).
 -- Test kullanıcıları ve kayıtları bu blok içinde oluşturulur; blok sonunda bilerek hata verilir,
 -- böylece HİÇBİR DEĞİŞİKLİK KALICI OLMAZ (her şey geri alınır). Sonuçlar hata mesajında görünür.
 do $$
 declare
   r text := E'PERSONA TESTİ (tüm değişiklikler geri alınacak)\n';
   gecti int := 0; kaldi int := 0;
-  vat uuid := gen_random_uuid(); bek uuid := gen_random_uuid(); ucz uuid := gen_random_uuid();
+  vat uuid := gen_random_uuid(); bek uuid := gen_random_uuid(); ucz uuid := gen_random_uuid(); dog uuid := gen_random_uuid(); vat2 uuid := gen_random_uuid();
   ucr uuid := gen_random_uuid(); bit uuid := gen_random_uuid(); adm uuid := gen_random_uuid();
   tid bigint; eid bigint; j jsonb; n int; m int;
   inst uuid := '00000000-0000-0000-0000-000000000000';
@@ -13,18 +13,21 @@ begin
   -- yardımcı: sonuç satırı
   -- (plpgsql içinde alt fonksiyon olmadığı için her test aynı kalıpla yazıldı)
 
-  insert into auth.users (id, instance_id, aud, role, phone, phone_confirmed_at, created_at, updated_at) values
-    (vat, inst, 'authenticated', 'authenticated', '905009990001', now(), now(), now()),
-    (bek, inst, 'authenticated', 'authenticated', '905009990002', now(), now(), now()),
-    (ucz, inst, 'authenticated', 'authenticated', '905009990003', now(), now(), now()),
-    (ucr, inst, 'authenticated', 'authenticated', '905009990004', now(), now(), now()),
-    (bit, inst, 'authenticated', 'authenticated', '905009990005', now(), now(), now()),
-    (adm, inst, 'authenticated', 'authenticated', '905009990006', now(), now(), now());
+  -- Google ile giriş yapmış gibi: e-posta doğrulanmış, telefon yok
+  insert into auth.users (id, instance_id, aud, role, email, email_confirmed_at, raw_app_meta_data, raw_user_meta_data, created_at, updated_at) values
+    (vat, inst, 'authenticated', 'authenticated', 'test-vat@ornek.invalid', now(), '{"provider":"google"}', '{"full_name":"Test Vatandaş"}', now(), now()),
+    (bek, inst, 'authenticated', 'authenticated', 'test-bek@ornek.invalid', now(), '{"provider":"google"}', '{}', now(), now()),
+    (ucz, inst, 'authenticated', 'authenticated', 'test-ucz@ornek.invalid', now(), '{"provider":"google"}', '{}', now(), now()),
+    (ucr, inst, 'authenticated', 'authenticated', 'test-ucr@ornek.invalid', now(), '{"provider":"google"}', '{}', now(), now()),
+    (bit, inst, 'authenticated', 'authenticated', 'test-bit@ornek.invalid', now(), '{"provider":"google"}', '{}', now(), now()),
+    (adm, inst, 'authenticated', 'authenticated', 'test-adm@ornek.invalid', now(), '{"provider":"google"}', '{}', now(), now()),
+    (vat2, inst, 'authenticated', 'authenticated', 'test-vat2@ornek.invalid', now(), '{"provider":"google"}', '{}', now(), now()),
+    (dog, inst, 'authenticated', 'authenticated', 'test-dog@ornek.invalid', null, '{"provider":"email"}', '{}', now(), now());
   update public.profiller set ad_soyad = 'Test Vatandaş' where id = vat;
-  update public.profiller set rol = 'emlakci', durum = 'beklemede', ad_soyad = 'Test Onaysız Emlakçı', ofis_adi = 'Test Ofis A' where id = bek;
-  update public.profiller set rol = 'emlakci', durum = 'onayli', ad_soyad = 'Test Ücretsiz Emlakçı', ofis_adi = 'Test Ofis B' where id = ucz;
-  update public.profiller set rol = 'emlakci', durum = 'onayli', ad_soyad = 'Test Ücretli Emlakçı', ofis_adi = 'Test Ofis C' where id = ucr;
-  update public.profiller set rol = 'emlakci', durum = 'onayli', ad_soyad = 'Test Süresi Biten', ofis_adi = 'Test Ofis D' where id = bit;
+  update public.profiller set rol = 'emlakci', durum = 'beklemede', ad_soyad = 'Test Onaysız Emlakçı', ofis_adi = 'Test Ofis A' , telefon = '905320000002' where id = bek;
+  update public.profiller set rol = 'emlakci', durum = 'onayli', ad_soyad = 'Test Ücretsiz Emlakçı', ofis_adi = 'Test Ofis B' , telefon = '905320000003' where id = ucz;
+  update public.profiller set rol = 'emlakci', durum = 'onayli', ad_soyad = 'Test Ücretli Emlakçı', ofis_adi = 'Test Ofis C' , telefon = '905320000004' where id = ucr;
+  update public.profiller set rol = 'emlakci', durum = 'onayli', ad_soyad = 'Test Süresi Biten', ofis_adi = 'Test Ofis D' , telefon = '905320000005' where id = bit;
   update public.profiller set rol = 'yonetici', durum = 'aktif', ad_soyad = 'Test Yönetici' where id = adm;
   insert into public.uyelikler (emlakci_id, paket_id, baslangic, bitis, durum) values
     (ucr, (select id from public.paketler order by sira limit 1), now() - interval '1 day', now() + interval '30 days', 'aktif'),
@@ -36,7 +39,8 @@ begin
   execute 'set local role authenticated';
   begin
     j := public.talep_olustur(jsonb_build_object('kategori', 'satilik-konut', 'tur', 'daire', 'islem', 'satilik', 'ilce', 'Kadıköy',
-          'baslik', 'Test talebi', 'ozet', 'Test özeti', 'aciklama', 'GIZLI ACIKLAMA', 'ad_soyad', 'Test Vatandaş', 'riza', true, 'butce_max', 5000000));
+          'baslik', 'Test talebi', 'ozet', 'Test özeti', 'aciklama', 'GIZLI ACIKLAMA', 'ad_soyad', 'Test Vatandaş', 'riza', true, 'butce_max', 5000000,
+          'telefon', '0532 111 22 33'));
     tid := (j ->> 'id')::bigint;
     r := r || '✓ Vatandaş talep oluşturdu: ' || (j ->> 'no') || ' (durum: ' || (j ->> 'durum') || E')\n'; gecti := gecti + 1;
   exception when others then r := r || '✗ Vatandaş talep oluşturamadı: ' || sqlerrm || E'\n'; kaldi := kaldi + 1; end;
@@ -45,6 +49,52 @@ begin
     if j::text like '%GIZLI ACIKLAMA%' then r := r || E'✓ Vatandaş kendi talebinin açıklamasını görüyor\n'; gecti := gecti + 1;
     else r := r || E'✗ Vatandaş kendi talebini göremedi\n'; kaldi := kaldi + 1; end if;
   exception when others then r := r || '✗ taleplerim: ' || sqlerrm || E'\n'; kaldi := kaldi + 1; end;
+  begin
+    j := public.profilim();
+    if (j ->> 'telefon_onayli')::boolean = false and j ->> 'giris_yontemi' = 'google' and j ->> 'ad_soyad' = 'Test Vatandaş' then
+      r := r || E'✓ Google hesabı: ad profile geldi, telefon "doğrulanmadı" olarak duruyor\n'; gecti := gecti + 1;
+    else r := r || '✗ Profil beklenen gibi değil: ' || j::text || E'\n'; kaldi := kaldi + 1; end if;
+  exception when others then r := r || '✗ profilim: ' || sqlerrm || E'\n'; kaldi := kaldi + 1; end;
+  execute 'reset role';
+
+  ---------------------------------------------------------------- 1b) BAŞKA KULLANICI ve DOĞRULANMAMIŞ HESAP
+  perform set_config('request.jwt.claims', json_build_object('sub', vat2, 'role', 'authenticated', 'aal', 'aal1')::text, true);
+  execute 'set local role authenticated';
+  begin
+    j := public.talep_guncelle(tid, jsonb_build_object('baslik', 'Ele geçirildi'));
+    r := r || E'✗ Başka kullanıcı talebi değiştirebildi\n'; kaldi := kaldi + 1;
+  exception when others then r := r || E'✓ Başka kullanıcı talebi değiştiremiyor\n'; gecti := gecti + 1; end;
+  begin
+    j := public.talep_kapat(tid, 'iptal');
+    r := r || E'✗ Başka kullanıcı talebi kapatabildi\n'; kaldi := kaldi + 1;
+  exception when others then r := r || E'✓ Başka kullanıcı talebi kapatamıyor\n'; gecti := gecti + 1; end;
+  begin
+    j := public.talep_sil(tid);
+    r := r || E'✗ Başka kullanıcı talebi silebildi\n'; kaldi := kaldi + 1;
+  exception when others then r := r || E'✓ Başka kullanıcı talebi silemiyor\n'; gecti := gecti + 1; end;
+  begin
+    execute format('update public.talepler set baslik = %L where id = %s', 'Ele geçirildi', tid);
+    get diagnostics n = row_count;
+    if n = 0 then r := r || E'✓ Tabloya doğrudan yazma da engelli\n'; gecti := gecti + 1;
+    else r := r || E'✗ Tabloya doğrudan yazılabildi\n'; kaldi := kaldi + 1; end if;
+  exception when others then r := r || E'✓ Tabloya doğrudan yazma da engelli\n'; gecti := gecti + 1; end;
+  begin
+    j := public.talep_detay(tid);
+    r := r || E'✗ Başka vatandaş iletişim bilgisini gördü\n'; kaldi := kaldi + 1;
+  exception when others then r := r || E'✓ Başka vatandaş iletişim bilgisini göremiyor\n'; gecti := gecti + 1; end;
+  begin
+    j := public.talep_olustur(jsonb_build_object('kategori', 'kiralik-konut', 'tur', 'daire', 'islem', 'kiralik', 'ilce', 'Şişli',
+          'baslik', 'Telefon testi', 'ozet', 'Telefon testi özeti', 'aciklama', 'x', 'ad_soyad', 'Test İki', 'riza', true, 'telefon', '12345'));
+    r := r || E'✗ Geçersiz telefonla talep kabul edildi\n'; kaldi := kaldi + 1;
+  exception when others then r := r || E'✓ Geçersiz telefon numarası reddediliyor (kayıt oluşmuyor)\n'; gecti := gecti + 1; end;
+  execute 'reset role';
+  perform set_config('request.jwt.claims', json_build_object('sub', dog, 'role', 'authenticated', 'aal', 'aal1')::text, true);
+  execute 'set local role authenticated';
+  begin
+    j := public.talep_olustur(jsonb_build_object('kategori', 'kiralik-konut', 'tur', 'daire', 'islem', 'kiralik', 'ilce', 'Şişli',
+          'baslik', 'Doğrulanmamış', 'ozet', 'Doğrulanmamış hesap', 'aciklama', 'x', 'ad_soyad', 'X', 'riza', true, 'telefon', '05321112244'));
+    r := r || E'✗ E-postası doğrulanmamış hesap talep oluşturdu\n'; kaldi := kaldi + 1;
+  exception when others then r := r || E'✓ Doğrulanmamış hesap talep oluşturamıyor\n'; gecti := gecti + 1; end;
   execute 'reset role';
 
   ---------------------------------------------------------------- 2) YÖNETİCİ: MFA'sız erişemez, MFA ile yayınlar
@@ -88,6 +138,22 @@ begin
     j := public.talep_detay(tid);
     r := r || E'✗ Ziyaretçi detay/iletişim aldı\n'; kaldi := kaldi + 1;
   exception when others then r := r || E'✓ Ziyaretçi detay ve iletişimi alamıyor\n'; gecti := gecti + 1; end;
+  execute 'reset role';
+
+  ---------------------------------------------------------------- 3b) EMLAKÇI BAŞVURUSU (vat2 ile)
+  perform set_config('request.jwt.claims', json_build_object('sub', vat2, 'role', 'authenticated', 'aal', 'aal1')::text, true);
+  execute 'set local role authenticated';
+  begin
+    j := public.emlakci_basvur(jsonb_build_object('ad_soyad', 'Test Aday', 'ofis_adi', 'Aday Emlak', 'yetki_belge_no', '3400999',
+          'eposta', 'aday@ornek.invalid', 'hizmet_ilceleri', jsonb_build_array('Kadıköy')));
+    r := r || E'✗ Telefonsuz emlakçı başvurusu kabul edildi\n'; kaldi := kaldi + 1;
+  exception when others then r := r || E'✓ İletişim telefonu olmadan emlakçı başvurusu yapılamıyor\n'; gecti := gecti + 1; end;
+  begin
+    j := public.emlakci_basvur(jsonb_build_object('ad_soyad', 'Test Aday', 'ofis_adi', 'Aday Emlak', 'yetki_belge_no', '3400999',
+          'eposta', 'aday@ornek.invalid', 'hizmet_ilceleri', jsonb_build_array('Kadıköy'), 'telefon', '0533 444 55 66'));
+    if j ->> 'durum' = 'beklemede' and j ->> 'telefon' = '905334445566' then r := r || E'✓ Emlakçı başvurusu alındı, onay bekliyor\n'; gecti := gecti + 1;
+    else r := r || '✗ Başvuru: ' || j::text || E'\n'; kaldi := kaldi + 1; end if;
+  exception when others then r := r || '✗ Başvuru: ' || sqlerrm || E'\n'; kaldi := kaldi + 1; end;
   execute 'reset role';
 
   ---------------------------------------------------------------- 4) ONAYSIZ EMLAKÇI
@@ -137,7 +203,7 @@ begin
   execute 'set local role authenticated';
   begin
     j := public.talep_detay(tid);
-    if j ->> 'telefon' = '905009990001' and j ->> 'aciklama' = 'GIZLI ACIKLAMA' then
+    if j ->> 'telefon' = '905321112233' and j ->> 'aciklama' = 'GIZLI ACIKLAMA' then
       r := r || E'✓ Ücretli erişim açıkken aktif ücretli üye ad, telefon ve açıklamayı aldı\n'; gecti := gecti + 1;
     else r := r || '✗ Detay eksik: ' || j::text || E'\n'; kaldi := kaldi + 1; end if;
   exception when others then r := r || '✗ Ücretli üye detay alamadı: ' || sqlerrm || E'\n'; kaldi := kaldi + 1; end;
@@ -208,21 +274,23 @@ begin
     else r := r || E'✗ Arşivleme çalışmadı\n'; kaldi := kaldi + 1; end if;
   exception when others then r := r || '✗ Arşivleme: ' || sqlerrm || E'\n'; kaldi := kaldi + 1; end;
 
-  ---------------------------------------------------------------- 11) Üyelik bitiş hatırlatması (SMS, 3 gün önce)
+  ---------------------------------------------------------------- 11) Üyelik bitiş hatırlatması (SMS yok, panelde listelenir)
   insert into public.uyelikler (emlakci_id, paket_id, baslangic, bitis, durum) values
-    (bek, (select id from public.paketler order by sira limit 1), now() - interval '27 days', now() + interval '60 hours', 'aktif');
-  update public.profiller set durum = 'onayli' where id = bek;
+    (bit, (select id from public.paketler order by sira limit 1), now() - interval '27 days', now() + interval '60 hours', 'aktif');
   begin
     n := public.uyelik_hatirlatmalari();
-    select count(*) into m from public.sms_kayitlari where telefon = '905009990002' and tur = 'hatirlatma';
-    if n >= 1 and m = 1 then r := r || E'✓ Bitişine 3 gün kalan üyeye hatırlatma SMS kaydı oluştu' ||
-         coalesce(' (' || (select k.hata from public.sms_kayitlari k where k.telefon = '905009990002' order by k.id desc limit 1) || ')', '') || E'\n'; gecti := gecti + 1;
-    else r := r || '✗ Hatırlatma oluşmadı (n=' || n || ', sms=' || m || E')\n'; kaldi := kaldi + 1; end if;
-    n := public.uyelik_hatirlatmalari();
-    select count(*) into m from public.sms_kayitlari where telefon = '905009990002' and tur = 'hatirlatma';
-    if m = 1 then r := r || E'✓ Aynı üyeliğe ikinci kez hatırlatma gönderilmiyor\n'; gecti := gecti + 1;
-    else r := r || E'✗ Hatırlatma tekrarlandı\n'; kaldi := kaldi + 1; end if;
+    m := public.uyelik_hatirlatmalari();
+    if n >= 1 and m = 0 then r := r || E'✓ Bitişine 3 gün kalan üyelik gece görevinde işaretlendi, tekrar işaretlenmiyor\n'; gecti := gecti + 1;
+    else r := r || '✗ Hatırlatma işaretleme (n=' || n || ', m=' || m || E')\n'; kaldi := kaldi + 1; end if;
   exception when others then r := r || '✗ Hatırlatma: ' || sqlerrm || E'\n'; kaldi := kaldi + 1; end;
+  perform set_config('request.jwt.claims', json_build_object('sub', adm, 'role', 'authenticated', 'aal', 'aal2')::text, true);
+  execute 'set local role authenticated';
+  begin
+    j := public.admin_hatirlatmalar();
+    if jsonb_array_length(j) >= 1 then r := r || E'✓ Yönetici panelinde bitişi yaklaşan üyeler WhatsApp hatırlatması için listeleniyor\n'; gecti := gecti + 1;
+    else r := r || E'✗ Yaklaşan üyelik listesi boş\n'; kaldi := kaldi + 1; end if;
+  exception when others then r := r || '✗ admin_hatirlatmalar: ' || sqlerrm || E'\n'; kaldi := kaldi + 1; end;
+  execute 'reset role';
 
   r := r || E'\nSONUÇ: ' || gecti || ' geçti, ' || kaldi || ' kaldı. (Test kayıtları geri alındı.)';
   raise exception '%', r;
