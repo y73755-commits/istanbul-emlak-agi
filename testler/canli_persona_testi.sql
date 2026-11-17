@@ -7,7 +7,7 @@ declare
   gecti int := 0; kaldi int := 0;
   vat uuid := gen_random_uuid(); bek uuid := gen_random_uuid(); ucz uuid := gen_random_uuid();
   ucr uuid := gen_random_uuid(); bit uuid := gen_random_uuid(); adm uuid := gen_random_uuid();
-  tid bigint; eid bigint; j jsonb; n int; m int; hata text;
+  tid bigint; eid bigint; j jsonb; n int; m int;
   inst uuid := '00000000-0000-0000-0000-000000000000';
 begin
   -- yardımcı: sonuç satırı
@@ -216,7 +216,7 @@ begin
     n := public.uyelik_hatirlatmalari();
     select count(*) into m from public.sms_kayitlari where telefon = '905009990002' and tur = 'hatirlatma';
     if n >= 1 and m = 1 then r := r || E'✓ Bitişine 3 gün kalan üyeye hatırlatma SMS kaydı oluştu' ||
-         coalesce(' (' || (select hata from public.sms_kayitlari where telefon = '905009990002' order by id desc limit 1) || ')', '') || E'\n'; gecti := gecti + 1;
+         coalesce(' (' || (select k.hata from public.sms_kayitlari k where k.telefon = '905009990002' order by k.id desc limit 1) || ')', '') || E'\n'; gecti := gecti + 1;
     else r := r || '✗ Hatırlatma oluşmadı (n=' || n || ', sms=' || m || E')\n'; kaldi := kaldi + 1; end if;
     n := public.uyelik_hatirlatmalari();
     select count(*) into m from public.sms_kayitlari where telefon = '905009990002' and tur = 'hatirlatma';
