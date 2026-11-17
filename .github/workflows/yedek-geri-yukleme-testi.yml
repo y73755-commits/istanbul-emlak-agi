@@ -51,4 +51,8 @@ jobs:
             select 'üyelik', count(*) from public.uyelikler union all
             select 'paket', count(*) from public.paketler union all
             select 'ayar', count(*) from public.ayarlar;" | tee sonuc.txt
-          grep -q "ilçe *| *39" sonuc.txt && echo "GERİ YÜKLEME BAŞARILI" || { echo "::error::İlçe sayısı beklenen 39 değil"; exit 1; }
+          grep -q "ilçe *| *39" sonuc.txt || { echo "::error::İlçe sayısı beklenen 39 değil"; exit 1; }
+          beklenen=$(grep -c . yedek/dosyalar/liste.txt || true); bulunan=$(find yedek/dosyalar/profil -type f | wc -l)
+          echo "Profil fotoğrafı: yedekte $bulunan / listede $beklenen"
+          [ "$bulunan" -ge "$beklenen" ] || { echo "::error::Yedekte eksik dosya var"; exit 1; }
+          echo "GERİ YÜKLEME BAŞARILI: veritabanı, dosyalar ve yapılandırma yedekten açıldı."

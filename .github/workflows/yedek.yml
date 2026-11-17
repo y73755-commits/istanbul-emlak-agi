@@ -1,5 +1,6 @@
 name: Veritabanı yedeği
-# Her gece Supabase veritabanının (kullanıcılar, talepler, üyelikler, ayarlar) şifreli yedeğini alır.
+# Her gece şifreli yedek alır: Supabase veritabanı (kullanıcılar, talepler, üyelikler, ayarlar),
+# kullanıcıların yüklediği profil fotoğrafları ve yapılandırma dosyaları (supabase/, data/, AYARLAR.md).
 # Yedek, GitHub Actions "Artifacts" bölümünde 30 gün saklanır. Dosya AES-256 ile şifrelidir;
 # açmak için YEDEK_PAROLASI gerekir (parola yalnızca sizde ve GitHub gizli değişkenlerinde durur).
 #
@@ -23,6 +24,7 @@ jobs:
       DB_URL: ${{ secrets.SUPABASE_DB_URL }}
       PAROLA: ${{ secrets.YEDEK_PAROLASI }}
     steps:
+      - uses: actions/checkout@v4
       - name: Ayar kontrolü
         run: |
           if [ -z "$DB_URL" ] || [ -z "$PAROLA" ]; then
@@ -41,6 +43,20 @@ jobs:
           supabase db dump --db-url "$DB_URL" -f yedek/roller.sql --role-only
           supabase db dump --db-url "$DB_URL" -f yedek/sema.sql
           supabase db dump --db-url "$DB_URL" -f yedek/veri.sql --use-copy --data-only
+          # Yüklenen dosyalar: profil fotoğrafları (herkese açık "profil" deposu)
+          SB_URL=$(python3 -c "import json;print(json.load(open('data/site.json',encoding='utf-8'))['supabase']['url'])")
+          mkdir -p yedek/dosyalar/profil
+          psql "$DB_URL" -At -c "select name from storage.objects where bucket_id = 'profil' order by name" > yedek/dosyalar/liste.txt
+          n=0
+          while IFS= read -r ad; do
+            [ -n "$ad" ] || continue
+            mkdir -p "yedek/dosyalar/profil/$(dirname "$ad")"
+            yol=$(python3 -c "import sys,urllib.parse;print(urllib.parse.quote(sys.argv[1]))" "$ad")
+            curl -sf "$SB_URL/storage/v1/object/public/profil/$yol" -o "yedek/dosyalar/profil/$ad" && n=$((n+1))
+          done < yedek/dosyalar/liste.txt
+          echo "Dosya: $n / $(grep -c . yedek/dosyalar/liste.txt || true)"
+          # Yapılandırma
+          mkdir -p yedek/yapilandirma && cp -r supabase data yedek/yapilandirma/
           ls -la yedek
           tar czf yedek.tgz yedek
           AD="yedek-$(date -u +%Y%m%d-%H%M).tgz.gpg"

@@ -1309,7 +1309,7 @@ self.addEventListener("fetch", e => {{
     # Özel alan adı bağlandığında (site_url kök adres olduğunda) GitHub Pages için CNAME dosyası otomatik yazılır.
     host = urllib.parse.urlparse(BASE_URL).hostname or ""
     cname = os.path.join(ROOT, "CNAME")
-    if BASE_PATH == "/" and not host.endswith("github.io"):
+    if BASE_PATH == "/" and not host.endswith(("github.io", "pages.dev")):
         open(cname, "w", encoding="utf-8").write(host + "\n")
     elif os.path.exists(cname):
         os.remove(cname)

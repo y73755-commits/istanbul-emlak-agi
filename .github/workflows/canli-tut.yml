@@ -1,0 +1,22 @@
+name: Veritabanını canlı tut
+# Supabase ücretsiz projeleri 1 hafta hareketsiz kalınca duraklatılır. Bu iş akışı 3 günde bir
+# herkese açık paket listesini okuyarak (ücretsiz, gizli bilgi gerektirmez) projeyi etkin tutmaya çalışır.
+# Bu bir garanti değildir; proje yine de duraklarsa Supabase panelinden "Restore project" ile açılır.
+on:
+  schedule:
+    - cron: "23 6 */3 * *"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Supabase'e istek gönder
+        run: |
+          URL=$(python3 -c "import json;d=json.load(open('data/site.json',encoding='utf-8'));print(d['supabase']['url'])")
+          KEY=$(python3 -c "import json;d=json.load(open('data/site.json',encoding='utf-8'));print(d['supabase']['anahtar'])")
+          KOD=$(curl -s -o /tmp/y.json -w "%{http_code}" "$URL/rest/v1/paketler?select=id&limit=1" -H "apikey: $KEY")
+          echo "Yanıt kodu: $KOD"; head -c 200 /tmp/y.json; echo
+          if [ "$KOD" != "200" ]; then echo "::error::Supabase yanıt vermedi (kod $KOD). Proje duraklamış olabilir: Supabase panelinden 'Restore project' ile açın."; exit 1; fi
