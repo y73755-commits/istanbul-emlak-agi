@@ -181,6 +181,8 @@
       try { history.replaceState(null, "", location.pathname + (qs ? "?" + qs : "")); } catch (e) {}
     };
     window.__ieaFilter = apply;
+    var box = $("[data-filters-box]");
+    if (box && window.innerWidth < 700 && !location.search) box.open = false;
     fForm.addEventListener("change", apply);
     fForm.addEventListener("input", function (ev) { if (ev.target.matches("[data-money]")) apply(); });
     fForm.addEventListener("reset", function () {

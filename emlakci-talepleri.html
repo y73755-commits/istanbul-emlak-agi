@@ -22,7 +22,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="preload" href="assets/fonts/manrope-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="assets/fonts/playfair-display-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="assets/css/style.css?v=100b72ba">
+<link rel="stylesheet" href="assets/css/style.css?v=43779541">
 <script>window.IEA={"base": "/istanbul-emlak-agi/", "wa": "905017017908", "ga4": "", "yayinGun": 60, "bugun": "2026-11-17"};</script>
 <script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Ana Sayfa", "item": "https://y73755-commits.github.io/istanbul-emlak-agi/index.html"}, {"@type": "ListItem", "position": 2, "name": "Emlakçı Talepleri"}]}</script>
 </head>
@@ -54,6 +54,7 @@
 <section class="sec sec-tight">
   <div class="wrap">
     <form class="filters" data-filters aria-label="Talepleri filtrele" onsubmit="return false">
+  <details class="filters-box" open data-filters-box><summary><span>Filtrele</span><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M7 12h10M10 18h4"/></svg></summary>
   <div class="filters-grid">
     <div class="field "><label for="f-kat">Talep türü</label><select id="f-kat" name="kategori"><option value="">Tüm talep türleri</option><option value="satilik-portfoy">Satılık portföy arıyorum</option><option value="kiralik-portfoy">Kiralık portföy arıyorum</option><option value="alici">Alıcı müşterim var</option><option value="kiraci">Kiracı müşterim var</option><option value="arsa-tarla">Arsa / tarla arıyorum</option><option value="kat-karsiligi">Kat karşılığı arsa arıyorum</option><option value="ofis-dukkan">Ofis / dükkân arıyorum</option><option value="takas">Takaslı portföy arıyorum</option><option value="portfoyum-var">Portföyüm var, iş birliğine açığım</option><option value="diger">Diğer talepler</option></select></div>
     <div class="field "><label for="f-ilce">İlçe</label><select id="f-ilce" name="ilce" data-ilce><option value="">Tüm İstanbul</option><optgroup label="Avrupa Yakası"><option value="Arnavutköy">Arnavutköy</option><option value="Avcılar">Avcılar</option><option value="Bağcılar">Bağcılar</option><option value="Bahçelievler">Bahçelievler</option><option value="Bakırköy">Bakırköy</option><option value="Başakşehir">Başakşehir</option><option value="Bayrampaşa">Bayrampaşa</option><option value="Beşiktaş">Beşiktaş</option><option value="Beylikdüzü">Beylikdüzü</option><option value="Beyoğlu">Beyoğlu</option><option value="Büyükçekmece">Büyükçekmece</option><option value="Çatalca">Çatalca</option><option value="Esenler">Esenler</option><option value="Esenyurt">Esenyurt</option><option value="Eyüpsultan">Eyüpsultan</option><option value="Fatih">Fatih</option><option value="Gaziosmanpaşa">Gaziosmanpaşa</option><option value="Güngören">Güngören</option><option value="Kağıthane">Kağıthane</option><option value="Küçükçekmece">Küçükçekmece</option><option value="Sarıyer">Sarıyer</option><option value="Silivri">Silivri</option><option value="Sultangazi">Sultangazi</option><option value="Şişli">Şişli</option><option value="Zeytinburnu">Zeytinburnu</option></optgroup><optgroup label="Anadolu Yakası"><option value="Adalar">Adalar</option><option value="Ataşehir">Ataşehir</option><option value="Beykoz">Beykoz</option><option value="Çekmeköy">Çekmeköy</option><option value="Kadıköy">Kadıköy</option><option value="Kartal">Kartal</option><option value="Maltepe">Maltepe</option><option value="Pendik">Pendik</option><option value="Sancaktepe">Sancaktepe</option><option value="Sultanbeyli">Sultanbeyli</option><option value="Şile">Şile</option><option value="Tuzla">Tuzla</option><option value="Ümraniye">Ümraniye</option><option value="Üsküdar">Üsküdar</option></optgroup></select></div>
@@ -64,6 +65,7 @@
     <div class="field "><label for="f-bmax">En fazla bütçe (TL)</label><input id="f-bmax" name="bmax" inputmode="numeric" autocomplete="off" placeholder="Sınırsız" data-money></div>
     <div class="field "><label for="f-sira">Sırala</label><select id="f-sira" name="sira"><option value="yeni">En yeni</option><option value="eski">En eski</option><option value="butce-artan">Bütçe (artan)</option><option value="butce-azalan">Bütçe (azalan)</option></select></div>
   </div>
+  </details>
   <div class="filters-foot">
     <label class="check"><input type="checkbox" name="fav" data-only-fav> <span>Sadece favorilerim</span></label>
     <p class="count" aria-live="polite" data-count></p>
@@ -216,6 +218,6 @@
   </a>
 </div>
 <script src="assets/js/ilceler.js?v=b22fda2c" defer></script>
-<script src="assets/js/main.js?v=4e5dedbd" defer></script>
+<script src="assets/js/main.js?v=fe2a7714" defer></script>
 </body>
 </html>

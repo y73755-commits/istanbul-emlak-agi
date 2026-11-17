@@ -416,10 +416,25 @@ def field(label, inner, cls="", hint="", fid=""):
     return f'<div class="field {cls}"><label for="{fid}">{label}</label>{inner}{h}</div>'
 
 # ------------------------------------------------------------------ harita
+def _bbox(d):
+    nums = [float(x) for x in re.findall(r"-?\d+(?:\.\d+)?", d)]
+    xs, ys = nums[0::2], nums[1::2]
+    return min(xs), min(ys), max(xs), max(ys)
+
 def harita_svg(P, vurgula=None, etiket=True, link=True):
     big = {"Silivri", "Çatalca", "Arnavutköy", "Eyüpsultan", "Sarıyer", "Beykoz", "Şile", "Çekmeköy", "Tuzla",
            "Pendik", "Büyükçekmece", "Başakşehir", "Ümraniye", "Kadıköy", "Üsküdar", "Maltepe", "Esenyurt", "Sancaktepe"}
     parts, labels = [], []
+    vb = MAP["viewBox"]; fs = 1.0
+    if vurgula and vurgula in MAP["ilceler"]:
+        x0, y0, x1, y1 = _bbox(MAP["ilceler"][vurgula]["d"])
+        cx, cy = (x0 + x1) / 2, (y0 + y1) / 2
+        w = max((x1 - x0) * 2.6, (y1 - y0) * 2.6 * 1.4, 220)
+        h = w / 1.4
+        vx = min(max(cx - w / 2, 0), 1000 - w) if w < 1000 else 0
+        vb = f"{vx:.0f} {cy - h / 2:.0f} {w:.0f} {h:.0f}"
+        fs = w / 1000
+        VX0, VY0, VX1, VY1 = vx, cy - h / 2, vx + w, cy + h / 2
     for i in ILCELER:
         m = MAP["ilceler"].get(i["ad"])
         if not m:
@@ -431,9 +446,12 @@ def harita_svg(P, vurgula=None, etiket=True, link=True):
         if link:
             path = f'<a href="{P}ilce/{i["slug"]}.html" aria-label="{e(i["ad"])}">{path}</a>'
         parts.append(path)
-        if etiket and (i["ad"] in big or i["ad"] == vurgula):
-            labels.append(f'<text x="{m["x"]}" y="{m["y"]}"{" class=on" if vurgula == i["ad"] else ""}>{e(i["ad"])}</text>')
-    return (f'<svg class="imap" viewBox="{MAP["viewBox"]}" role="img" aria-label="İstanbul ilçe haritası">'
+        if etiket and vurgula and VX0 + 20 * fs < m["x"] < VX1 - 20 * fs and VY0 + 10 * fs < m["y"] < VY1 - 10 * fs and (fs < .6 or i["ad"] in big or i["ad"] == vurgula):
+            on = vurgula == i["ad"]
+            labels.append(f'<text x="{m["x"]}" y="{m["y"]}" style="font-size:{(30 if on else 22) * fs:.1f}px;stroke-width:{4 * fs:.1f}px"{" class=on" if on else ""}>{e(i["ad"])}</text>')
+        elif etiket and not vurgula and i["ad"] in big:
+            labels.append(f'<text x="{m["x"]}" y="{m["y"]}">{e(i["ad"])}</text>')
+    return (f'<svg class="imap" viewBox="{vb}" role="img" aria-label="{e(vurgula + " ilçesi haritası") if vurgula else "İstanbul ilçe haritası"}">'
             f'<g class="imap-p">{"".join(parts)}</g><g class="imap-l" aria-hidden="true">{"".join(labels)}</g></svg>')
 
 # ------------------------------------------------------------------ ANA SAYFA
@@ -622,6 +640,7 @@ def build_index():
 def filtre_bar(kind):
     kat = kategori_opts(kind, "Tüm talep türleri")
     return f'''<form class="filters" data-filters aria-label="Talepleri filtrele" onsubmit="return false">
+  <details class="filters-box" open data-filters-box><summary><span>Filtrele</span>{I["filter"]}</summary>
   <div class="filters-grid">
     {field("Talep türü", f'<select id="f-kat" name="kategori">{kat}</select>', fid="f-kat")}
     {field("İlçe", f'<select id="f-ilce" name="ilce" data-ilce>{ilce_opts("Tüm İstanbul")}</select>', fid="f-ilce")}
@@ -632,6 +651,7 @@ def filtre_bar(kind):
     {field("En fazla bütçe (TL)", '<input id="f-bmax" name="bmax" inputmode="numeric" autocomplete="off" placeholder="Sınırsız" data-money>', fid="f-bmax")}
     {field("Sırala", '<select id="f-sira" name="sira">' + opt("yeni", "En yeni") + opt("eski", "En eski") + opt("butce-artan", "Bütçe (artan)") + opt("butce-azalan", "Bütçe (azalan)") + '</select>', fid="f-sira")}
   </div>
+  </details>
   <div class="filters-foot">
     <label class="check"><input type="checkbox" name="fav" data-only-fav> <span>Sadece favorilerim</span></label>
     <p class="count" aria-live="polite" data-count></p>
@@ -907,7 +927,7 @@ def build_paketler():
   {btn}
 </div>'''
     free = f'''<div class="plan free">
-  <span class="ribbon ok">{"Şimdi açık" if not PAID else "Her zaman"}</span>
+  <span class="ribbon acik">{"Şimdi açık" if not PAID else "Her zaman"}</span>
   <h3>İş Birliği Üyeliği</h3>
   <p class="plan-days">Onaylı emlakçılar</p>
   <p class="plan-price">Ücretsiz</p>
