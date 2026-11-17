@@ -36,7 +36,7 @@ for f in sayfalar:
     base = os.path.dirname(f)
     for h in re.findall(r'href="([^"#?]+)(?:[#?][^"]*)?"', t):
         if h.startswith(("http", "mailto:", "tel:", "data:", "//", "javascript")) or h.endswith((".webmanifest",)): continue
-        hedef = h.replace("/istanbul-emlak-agi/", "", 1) if h.startswith("/istanbul-emlak-agi/") else os.path.normpath(os.path.join(base, h))
+        hedef = h.replace("/istanbul-emlak-agi/", "", 1) if h.startswith("/istanbul-emlak-agi/") else (h.lstrip("/") if h.startswith("/") else os.path.normpath(os.path.join(base, h)))
         hedef = hedef or "index.html"
         if not os.path.exists(hedef): sorun.append(f"{f}: kırık bağlantı {h}")
 for k, v in basliklar.items():
