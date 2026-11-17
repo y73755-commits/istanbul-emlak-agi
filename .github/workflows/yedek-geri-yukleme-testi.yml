@@ -1,0 +1,54 @@
+name: Yedek geri yükleme testi
+# En son şifreli yedeği indirir, açar ve GitHub'ın geçici sunucusunda çalışan BOŞ bir Supabase
+# veritabanına geri yükler; tablo sayılarını raporlar. Canlı veritabanına dokunmaz.
+# Elle çalıştırılır: Actions > Yedek geri yükleme testi > Run workflow
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      PAROLA: ${{ secrets.YEDEK_PAROLASI }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: En son yedeği indir
+        run: |
+          set -euo pipefail
+          [ -n "$PAROLA" ] || { echo "::error::YEDEK_PAROLASI tanımlı değil."; exit 1; }
+          RUN=$(gh run list --workflow yedek.yml --status success --limit 1 --json databaseId -q '.[0].databaseId')
+          [ -n "$RUN" ] || { echo "::error::Başarılı bir yedek çalışması bulunamadı."; exit 1; }
+          gh run download "$RUN" -n veritabani-yedegi -D indir
+          F=$(ls indir/*.gpg | head -1); echo "Yedek: $F"
+          gpg --batch --yes --pinentry-mode loopback --passphrase "$PAROLA" -d -o yedek.tgz "$F"
+          tar xzf yedek.tgz && ls -la yedek
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+      - name: Boş Supabase veritabanı başlat
+        run: |
+          supabase init --force >/dev/null
+          supabase db start
+      - name: Geri yükle
+        run: |
+          set -euo pipefail
+          psql --single-transaction --variable ON_ERROR_STOP=1 \
+            --file yedek/roller.sql --file yedek/sema.sql \
+            --command 'SET session_replication_role = replica' --file yedek/veri.sql \
+            --dbname "postgresql://postgres:postgres@127.0.0.1:54322/postgres"
+      - name: Doğrula
+        run: |
+          psql "postgresql://postgres:postgres@127.0.0.1:54322/postgres" -v ON_ERROR_STOP=1 -c "
+            select 'ilçe' tablo, count(*) from public.ilceler union all
+            select 'mahalle', count(*) from public.mahalleler union all
+            select 'kullanıcı (auth.users)', count(*) from auth.users union all
+            select 'profil', count(*) from public.profiller union all
+            select 'talep', count(*) from public.talepler union all
+            select 'talep detayı', count(*) from public.talep_detaylari union all
+            select 'üyelik', count(*) from public.uyelikler union all
+            select 'paket', count(*) from public.paketler union all
+            select 'ayar', count(*) from public.ayarlar;" | tee sonuc.txt
+          grep -q "ilçe *| *39" sonuc.txt && echo "GERİ YÜKLEME BAŞARILI" || { echo "::error::İlçe sayısı beklenen 39 değil"; exit 1; }

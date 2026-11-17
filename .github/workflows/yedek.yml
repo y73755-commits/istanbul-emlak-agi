@@ -1,0 +1,56 @@
+name: Veritabanı yedeği
+# Her gece Supabase veritabanının (kullanıcılar, talepler, üyelikler, ayarlar) şifreli yedeğini alır.
+# Yedek, GitHub Actions "Artifacts" bölümünde 30 gün saklanır. Dosya AES-256 ile şifrelidir;
+# açmak için YEDEK_PAROLASI gerekir (parola yalnızca sizde ve GitHub gizli değişkenlerinde durur).
+#
+# Kurulum (bir kez, siz yaparsınız):
+#   GitHub > Settings > Secrets and variables > Actions > New repository secret
+#   SUPABASE_DB_URL : Supabase > Connect > Session pooler bağlantı adresi (şifre dahil)
+#   YEDEK_PAROLASI  : kendi belirlediğiniz uzun bir parola (kaybederseniz yedek açılamaz)
+on:
+  schedule:
+    - cron: "40 0 * * *"      # her gece 03:40 (Türkiye saati)
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: yedek
+  cancel-in-progress: false
+jobs:
+  yedek:
+    runs-on: ubuntu-latest
+    env:
+      DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+      PAROLA: ${{ secrets.YEDEK_PAROLASI }}
+    steps:
+      - name: Ayar kontrolü
+        run: |
+          if [ -z "$DB_URL" ] || [ -z "$PAROLA" ]; then
+            echo "::warning::SUPABASE_DB_URL ve YEDEK_PAROLASI tanımlı değil; yedek alınmadı. Kurulum adımları yedek.yml dosyasının başında."
+            echo "ATLA=1" >> "$GITHUB_ENV"
+          fi
+      - uses: supabase/setup-cli@v1
+        if: env.ATLA != '1'
+        with:
+          version: latest
+      - name: Yedek al ve şifrele
+        if: env.ATLA != '1'
+        run: |
+          set -euo pipefail
+          mkdir -p yedek
+          supabase db dump --db-url "$DB_URL" -f yedek/roller.sql --role-only
+          supabase db dump --db-url "$DB_URL" -f yedek/sema.sql
+          supabase db dump --db-url "$DB_URL" -f yedek/veri.sql --use-copy --data-only
+          ls -la yedek
+          tar czf yedek.tgz yedek
+          AD="yedek-$(date -u +%Y%m%d-%H%M).tgz.gpg"
+          gpg --batch --yes --pinentry-mode loopback --passphrase "$PAROLA" --symmetric --cipher-algo AES256 -o "$AD" yedek.tgz
+          rm -rf yedek yedek.tgz
+          echo "DOSYA=$AD" >> "$GITHUB_ENV"
+      - uses: actions/upload-artifact@v4
+        if: env.ATLA != '1'
+        with:
+          name: veritabani-yedegi
+          path: ${{ env.DOSYA }}
+          retention-days: 30
+          if-no-files-found: error
