@@ -218,7 +218,7 @@ def footer(P):
       <div>
         <h2 class="foot-h">WhatsApp</h2>
         <ul class="foot-list">{wa_links}</ul>
-        <p class="foot-note">{e(C["telefon_gosterim"])}<br>{e(C["hizmet_bolgesi"])}</p>
+        <p class="foot-note">WhatsApp: <a href="{e(wa(WA_MSG["platform"]))}" target="_blank" rel="noopener">{e(C["telefon_gosterim"])}</a><br>Konum: {e(C.get("konum", "İstanbul"))}<br>{e(C["hizmet_bolgesi"])}</p>
       </div>
     </div>
     <div class="foot-ilce">
@@ -251,7 +251,7 @@ def page(path, title, desc, body, P="", active=None, schema=None, extra_js="", n
     sch = ""
     org = {"@context": "https://schema.org", "@type": "Organization", "name": SITE, "url": BASE_URL + "/",
            "logo": BASE_URL + "/assets/icons/icon-512.png", "slogan": S["slogan"],
-           "areaServed": {"@type": "City", "name": "İstanbul"},
+           "areaServed": {"@type": "City", "name": "İstanbul"}, "address": {"@type": "PostalAddress", "addressLocality": "İstanbul", "addressCountry": "TR"},
            "contactPoint": {"@type": "ContactPoint", "telephone": "+" + C["whatsapp"], "contactType": "customer service", "areaServed": "TR", "availableLanguage": "Turkish"}}
     blocks = [org] if path == "index.html" else []
     if path == "index.html":
@@ -1030,6 +1030,7 @@ def build_hakkimizda_iletisim():
       <h2>İletişim bilgileri</h2>
       <dl class="dl">
         <dt>WhatsApp ve telefon</dt><dd><a class="link-gold" href="tel:+{C["whatsapp"]}" data-track="telefon" data-ctx="iletisim">{e(C["telefon_gosterim"])}</a></dd>
+        <dt>Konum</dt><dd>{e(C.get("konum", "İstanbul"))}</dd>
         <dt>Hizmet bölgesi</dt><dd>{e(C["hizmet_bolgesi"])}</dd>
         <dt>Talep ve veri silme</dt><dd>Talebinizi kapatmak veya verilerinizin silinmesini istemek için WhatsApp'tan “Destek almak istiyorum” seçeneğiyle yazın.</dd>
       </dl>

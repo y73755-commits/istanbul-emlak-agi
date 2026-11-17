@@ -9,7 +9,7 @@ Birkaç dakika içinde site otomatik yeniden oluşturulur (Actions → "Siteyi o
 
 | Ne değişecek | Dosya / alan |
 |---|---|
-| WhatsApp numarası | `data/site.json` → `iletisim.whatsapp` (ör. `905017017908`) |
+| WhatsApp numarası | `data/site.json` → `iletisim.whatsapp` (ör. `905520928085`) |
 | Ana sayfa başlığı ve açıklaması | `data/site.json` → `ana_sayfa` |
 | Paket adları, süreleri, fiyatları | `data/site.json` → `uyelik.paketler` (`fiyat`, `yayinda`) |
 | Ücretli erişimi açma/kapama | `data/site.json` → `uyelik.ucretli_erisim_aktif` (`true` / `false`) |

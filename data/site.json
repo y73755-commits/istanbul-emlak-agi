@@ -11,8 +11,9 @@
 
   "iletisim": {
     "_aciklama": "WhatsApp numarasını 90 ile başlayan, boşluksuz yazın (ör. 905017017908). Sitedeki tüm WhatsApp butonları bu numarayı kullanır.",
-    "whatsapp": "905017017908",
-    "telefon_gosterim": "0501 701 79 08",
+    "whatsapp": "905520928085",
+    "telefon_gosterim": "0552 092 80 85",
+    "konum": "İstanbul",
     "hizmet_bolgesi": "Yalnızca İstanbul (39 ilçe)"
   },
 
@@ -82,7 +83,7 @@
   "veri_sorumlusu": {
     "_aciklama": "KVKK aydınlatma metninde görünen veri sorumlusu bilgileri. Şirket/şahıs unvanı ve adres belli olunca doldurun.",
     "unvan": "",
-    "adres": "",
+    "adres": "İstanbul",
     "eposta": "",
     "mersis_vergi_no": ""
   },
