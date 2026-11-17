@@ -673,7 +673,7 @@ def build_lists():
     # Müşteri talepleri
     ph, sch = page_head(P, "Müşteri talepleri", "Vatandaşların gayrimenkul talepleri",
         "İstanbul'da gayrimenkul arayan veya gayrimenkulünü satmak, kiraya vermek isteyen vatandaşların talepleri. Herkes özetleri görür; tam detay ve iletişim bilgisi yalnızca aktif ücretli üyeliği olan onaylı emlakçılara açılır.",
-        "halic-gece", [("index.html", "Ana Sayfa"), (None, "Müşteri Talepleri")],
+        "kiralik-konut", [("index.html", "Ana Sayfa"), (None, "Müşteri Talepleri")],
         f'<a class="btn btn-gold" href="talep-olustur.html">{I["plus"]}<span>Ücretsiz talep oluştur</span></a>')
     cards = "".join(talep_kart(t, P) for t in VT)
     body = f'''{ph}
@@ -694,7 +694,7 @@ def build_lists():
     # Emlakçı talepleri
     ph, sch = page_head(P, "Emlakçı talepleri", "Emlakçılar arası iş birliği talepleri",
         "Emlak danışmanlarının aradığı portföyler, hazır alıcı ve kiracı müşterileri ve iş birliğine açık portföyleri. Detay ve paylaşan emlakçının iletişim bilgisi yalnızca onaylı emlakçı üyelere açıktır.",
-        "bogaz-fsm", [("index.html", "Ana Sayfa"), (None, "Emlakçı Talepleri")],
+        "is-birligi", [("index.html", "Ana Sayfa"), (None, "Emlakçı Talepleri")],
         f'<a class="btn btn-gold" href="portfoy-is-birligi.html#paylas">{I["plus"]}<span>İş birliği talebi gönder</span></a>'
         f'<a class="btn btn-line" href="emlakci-uyelik.html">{I["users"]}<span>Emlakçı olarak katıl</span></a>')
     cards = "".join(talep_kart(t, P, "emlakci") for t in ET)
@@ -1034,7 +1034,7 @@ def build_hakkimizda_iletisim():
     P = ""
     ph, sch = page_head(P, "Hakkımızda", "İstanbul'un gayrimenkul ve iş birliği ağı",
         "İstanbul Emlak Ağı; gayrimenkul arayan vatandaşları, müşterilerine portföy arayan emlak danışmanlarını ve iş birliği yapmak isteyen emlak ofislerini aynı platformda buluşturur.",
-        "bogaz-fsm", [("index.html", "Ana Sayfa"), (None, "Hakkımızda")])
+        "hero-bogaz", [("index.html", "Ana Sayfa"), (None, "Hakkımızda")])
     faq = "".join(f'<details class="faq"><summary>{e(q)}</summary><p>{e(a)}</p></details>' for q, a in SSS)
     faq_schema = {"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [
         {"@type": "Question", "name": q, "acceptedAnswer": {"@type": "Answer", "text": a}} for q, a in SSS]}

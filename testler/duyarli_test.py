@@ -8,7 +8,7 @@ SAYFALAR = ["index.html", "musteri-talepleri.html", "emlakci-talepleri.html", "p
             "talep-olustur.html", "emlakci-uyelik.html", "uye-ol.html", "giris.html", "hesabim.html", "yonetici.html",
             "istanbul-ilceleri.html", "ilce/kadikoy.html", "ilce/besiktas.html", "hakkimizda.html", "iletisim.html",
             "kvkk-aydinlatma-metni.html", "404.html"]
-GENISLIK = [(320, 640), (390, 844), (768, 1024), (1024, 768), (1440, 900), (1920, 1080)]
+GENISLIK = [(320, 640), (390, 844), (768, 1024), (1024, 768), (1280, 800), (1366, 768), (1440, 900), (1920, 1080)]
 
 DENETIM = """() => {
  const W = innerWidth, sorun = [];
@@ -26,6 +26,8 @@ DENETIM = """() => {
  for (const b of document.querySelectorAll('.btn, .nav ul a, .chip')) { const r = b.getBoundingClientRect(); if (r.width && b.scrollWidth > b.clientWidth + 2 && getComputedStyle(b).overflow === 'hidden') sorun.push('kesik metin ' + b.textContent.trim().slice(0, 30)); }
  // küçük dokunma hedefi (yalnızca dar ekranda)
  if (W <= 400) { let k = 0, kk = []; for (const a of document.querySelectorAll('main a.btn, main button, .nav-toggle, [data-wa]:not(.away) .wa-btn')) { const r = a.getBoundingClientRect(); if (r.width && r.height && (r.height < 44 || r.width < 44)) { k++; kk.push((a.className||a.tagName)+' '+Math.round(r.width)+'x'+Math.round(r.height)); } } if (k) sorun.push(k + ' küçük dokunma hedefi: ' + kk.join(',')); }
+ const cta = document.querySelector('.nav-cta'), hw = document.querySelector('.header-in');
+ if (cta && hw && getComputedStyle(document.querySelector('[data-nav-toggle]')).display === 'none') { const a = cta.getBoundingClientRect(), b = hw.getBoundingClientRect(); if (a.right > b.right + 1 || a.right > W) sorun.push('üst menü sığmıyor (' + Math.round(a.right) + ' > ' + Math.round(b.right) + ')'); }
  return sorun; }"""
 
 WA = """() => { const box = document.querySelector('[data-wa]'); if (!box) return null;

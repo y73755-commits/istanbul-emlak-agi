@@ -2,10 +2,8 @@
   "_aciklama": "Sitede kullanılan fotoğraflar. 'kaynak' alanı olanlar kaynak/gorseller klasöründeki size ait görsel paketinden, 'unsplash' alanı olanlar Unsplash Lisansı ile (ücretsiz) alınır. 'odak' [yatay, dikey] 0-1 arası değerdir ve kırpmada ortada tutulacak noktayı belirtir. Değiştirip kaydettiğinizde GitHub Actions görselleri aynı renk tonuyla yeniden üretir (tools/gorselleri_hazirla.py).",
   "gorseller": [
     {"ad": "hero-bogaz", "kaynak": "kaynak/gorseller/01-ana-sayfa-istanbul-bogazi.webp", "alt": "Akşam ışıklarında Boğaz köprüsü ve İstanbul Boğazı", "oran": "2:1", "genislikler": [960, 1600], "odak": [0.6, 0.5], "ton": 0.6},
-    {"ad": "bogaz-fsm", "unsplash": "photo-1661935635412-fa36cf42ae35", "alt": "Akşam ışığında Boğaz köprüsü ve Levent gökdelenleri", "oran": "16:9", "genislikler": [960, 1600], "odak": [0.5, 0.5]},
-    {"ad": "halic-gece", "unsplash": "photo-1608677663465-bc94c1c72416", "alt": "Gece Haliç ve İstanbul şehir ışıkları", "oran": "16:9", "genislikler": [960, 1600], "odak": [0.5, 0.5]},
     {"ad": "satilik-konut", "unsplash": "photo-1525953776754-6c4b7ee655ab", "alt": "Modern konut binasının cephesi", "oran": "4:3", "genislikler": [480, 960], "odak": [0.5, 0.5]},
-    {"ad": "kiralik-konut", "kaynak": "kaynak/gorseller/02-konut-talepleri.webp", "alt": "Deniz manzaralı, geniş pencereli modern salon", "oran": "4:3", "genislikler": [480, 960], "odak": [0.5, 0.55], "ton": 0.6},
+    {"ad": "kiralik-konut", "kaynak": "kaynak/gorseller/02-konut-talepleri.webp", "alt": "Deniz manzaralı, geniş pencereli modern salon", "oran": "4:3", "genislikler": [480, 960, 1280], "odak": [0.5, 0.55], "ton": 0.6},
     {"ad": "satilik-arsa", "kaynak": "kaynak/gorseller/03-arsa-talepleri.webp", "alt": "Gün batımında yeşil arazi ve toprak yol", "oran": "4:3", "genislikler": [480, 960], "odak": [0.5, 0.55], "ton": 0.6},
     {"ad": "tarla", "unsplash": "photo-1495107334309-fcf20504a5ab", "alt": "Gün batımında tarla", "oran": "4:3", "genislikler": [480, 960], "odak": [0.5, 0.5], "ton": 1.6, "parlaklik": 0.9, "kalite": 62},
     {"ad": "kat-karsiligi", "unsplash": "photo-1638519922476-50688bb1f318", "alt": "Vinçli yeni bina inşaatı", "oran": "4:3", "genislikler": [480, 960], "odak": [0.5, 0.5], "ton": 1.4, "parlaklik": 0.9},
@@ -13,6 +11,6 @@
     {"ad": "ticari", "kaynak": "kaynak/gorseller/04-ofis-ve-ticari-gayrimenkul.webp", "alt": "Cam cepheli modern iş binasının girişi", "oran": "4:3", "genislikler": [480, 960], "odak": [0.48, 0.55], "ton": 0.6},
     {"ad": "dukkan", "unsplash": "photo-1746886544129-9e4c9733630b", "alt": "Akşam ışıklarında vitrini ve girişi görünen dükkân cephesi", "oran": "4:3", "genislikler": [480, 960], "odak": [0.5, 0.5]},
     {"ad": "villa", "unsplash": "photo-1707189856923-46dd41ea2bdc", "alt": "Havuzlu modern villa", "oran": "4:3", "genislikler": [480, 960], "odak": [0.5, 0.5], "ton": 1.5, "parlaklik": 0.92},
-    {"ad": "is-birligi", "kaynak": "kaynak/gorseller/05-emlakci-is-birligi.webp", "alt": "Proje planı üzerinde birlikte çalışan emlak danışmanları", "oran": "4:3", "genislikler": [480, 960], "odak": [0.5, 0.45], "ton": 0.6}
+    {"ad": "is-birligi", "kaynak": "kaynak/gorseller/05-emlakci-is-birligi.webp", "alt": "Proje planı üzerinde birlikte çalışan emlak danışmanları", "oran": "4:3", "genislikler": [480, 960, 1280], "odak": [0.5, 0.45], "ton": 0.6}
   ]
 }
