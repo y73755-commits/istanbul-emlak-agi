@@ -41,7 +41,7 @@ jobs:
           psql --single-transaction --variable ON_ERROR_STOP=1 \
             --file yedek/roller.sql --file yedek/sema.sql \
             --command 'SET session_replication_role = replica' --file yedek/veri.sql \
-            --dbname "postgresql://postgres:postgres@127.0.0.1:54322/postgres"
+            --dbname "postgresql://supabase_admin:postgres@127.0.0.1:54322/postgres"
       - name: Doğrula
         run: |
           psql "postgresql://postgres:postgres@127.0.0.1:54322/postgres" -v ON_ERROR_STOP=1 -c "
