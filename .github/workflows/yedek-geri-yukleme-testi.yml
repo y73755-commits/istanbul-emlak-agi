@@ -52,6 +52,9 @@ jobs:
             select 'paket', count(*) from public.paketler union all
             select 'ayar', count(*) from public.ayarlar;" | tee sonuc.txt
           grep -q "ilçe *| *39" sonuc.txt || { echo "::error::İlçe sayısı beklenen 39 değil"; exit 1; }
+          kul=$(psql "postgresql://postgres:postgres@127.0.0.1:54322/postgres" -At -c "select count(*) from auth.users")
+          prof=$(psql "postgresql://postgres:postgres@127.0.0.1:54322/postgres" -At -c "select count(*) from public.profiller")
+          [ "$kul" -ge 1 ] && [ "$kul" = "$prof" ] || { echo "::error::Kullanıcı hesapları yedekte eksik (auth.users=$kul, profil=$prof)"; exit 1; }
           beklenen=$(grep -c . yedek/dosyalar/liste.txt || true); bulunan=$(find yedek/dosyalar/profil -type f | wc -l)
           echo "Profil fotoğrafı: yedekte $bulunan / listede $beklenen"
           [ "$bulunan" -ge "$beklenen" ] || { echo "::error::Yedekte eksik dosya var"; exit 1; }
