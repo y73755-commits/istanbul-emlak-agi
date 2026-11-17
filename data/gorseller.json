@@ -1,0 +1,18 @@
+{
+  "_aciklama": "Sitede kullanılan fotoğraflar (Unsplash Lisansı, ücretsiz kullanım). Yeni görsel eklemek için listeye ad + Unsplash fotoğraf kimliği ekleyin; GitHub Actions görseli indirir ve WebP olarak assets/img klasörüne kaydeder.",
+  "gorseller": [
+    { "ad": "hero-bogaz",      "unsplash": "photo-1696711551721-458511adcd86", "alt": "Gece ışıklarıyla Boğaz köprüsü ve İstanbul silüeti", "oran": "16:9", "genislikler": [960, 1600, 2400] },
+    { "ad": "bogaz-fsm",       "unsplash": "photo-1661935635412-fa36cf42ae35", "alt": "Akşam ışığında Boğaz köprüsü ve Levent gökdelenleri", "oran": "16:9", "genislikler": [960, 1600] },
+    { "ad": "halic-gece",      "unsplash": "photo-1608677663465-bc94c1c72416", "alt": "Gece Haliç ve İstanbul şehir ışıkları", "oran": "16:9", "genislikler": [960, 1600] },
+    { "ad": "satilik-konut",   "unsplash": "photo-1525953776754-6c4b7ee655ab", "alt": "Modern konut binasının cephesi", "oran": "4:3", "genislikler": [480, 960] },
+    { "ad": "kiralik-konut",   "unsplash": "photo-1757924461488-ef9ad0670978", "alt": "Geniş pencereli modern salon", "oran": "4:3", "genislikler": [480, 960] },
+    { "ad": "satilik-arsa",    "unsplash": "photo-1747854805840-9be7d5e360e6", "alt": "Parsellenmiş arsa alanı", "oran": "4:3", "genislikler": [480, 960] },
+    { "ad": "tarla",           "unsplash": "photo-1495107334309-fcf20504a5ab", "alt": "Gün batımında tarla", "oran": "4:3", "genislikler": [480, 960] },
+    { "ad": "kat-karsiligi",   "unsplash": "photo-1638519922476-50688bb1f318", "alt": "Vinçli yeni bina inşaatı", "oran": "4:3", "genislikler": [480, 960] },
+    { "ad": "kiralik-ofis",    "unsplash": "photo-1497366811353-6870744d04b2", "alt": "Cam bölmeli modern ofis", "oran": "4:3", "genislikler": [480, 960] },
+    { "ad": "ticari",          "unsplash": "photo-1579445505461-acecf2596190", "alt": "Cam cepheli ticari plaza", "oran": "4:3", "genislikler": [480, 960] },
+    { "ad": "dukkan",          "unsplash": "photo-1588848567248-8203ed798b4e", "alt": "Akşam ışıklarında cadde üzeri dükkânlar", "oran": "4:3", "genislikler": [480, 960] },
+    { "ad": "villa",           "unsplash": "photo-1707189856923-46dd41ea2bdc", "alt": "Havuzlu modern villa", "oran": "4:3", "genislikler": [480, 960] },
+    { "ad": "is-birligi",      "unsplash": "photo-1521791136064-7986c2920216", "alt": "İş birliği için tokalaşan iki profesyonel", "oran": "4:3", "genislikler": [480, 960] }
+  ]
+}

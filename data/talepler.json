@@ -1,0 +1,154 @@
+{
+  "_aciklama": "Yayındaki talepler. GİZLİLİK KURALI: Bu dosya herkese açıktır. Buraya ASLA ad, soyad, telefon, e-posta veya adres yazmayın; yalnızca özet bilgiler girin. İletişim bilgileri sadece WhatsApp'ta ve sizde kalır. 'ornek': true olan kayıtlar 'Örnek' etiketiyle görünür; gerçek talepler gelince silin veya ornekleri_goster'i false yapın. Tarih YYYY-AA-GG biçimindedir; yayın süresi (site.json → talep_yayin_suresi_gun) dolan talepler otomatik olarak listeden kalkar. durum: aktif | sonuclandi",
+
+  "ornekleri_goster": true,
+
+  "kodlar": {
+    "vatandas_kategorileri": {
+      "satilik-konut": "Satılık konut arıyorum",
+      "kiralik-konut": "Kiralık konut arıyorum",
+      "satilik-arsa": "Satılık arsa arıyorum",
+      "tarla": "Tarla arıyorum",
+      "ofis-dukkan": "Ofis / dükkân arıyorum",
+      "villa": "Villa arıyorum",
+      "kat-karsiligi": "Kat karşılığı arsa arıyorum",
+      "satmak": "Gayrimenkulümü satmak istiyorum",
+      "kiraya-vermek": "Gayrimenkulümü kiraya vermek istiyorum",
+      "diger": "Diğer gayrimenkul talepleri"
+    },
+    "emlakci_kategorileri": {
+      "satilik-portfoy": "Satılık portföy arıyorum",
+      "kiralik-portfoy": "Kiralık portföy arıyorum",
+      "alici": "Alıcı müşterim var",
+      "kiraci": "Kiracı müşterim var",
+      "arsa-tarla": "Arsa / tarla arıyorum",
+      "kat-karsiligi": "Kat karşılığı arsa arıyorum",
+      "ofis-dukkan": "Ofis / dükkân arıyorum",
+      "takas": "Takaslı portföy arıyorum",
+      "portfoyum-var": "Portföyüm var, iş birliğine açığım",
+      "diger": "Diğer talepler"
+    },
+    "turler": {
+      "daire": "Daire",
+      "rezidans": "Rezidans",
+      "villa": "Villa",
+      "mustakil": "Müstakil ev",
+      "arsa": "Arsa",
+      "tarla": "Tarla",
+      "ofis": "Ofis",
+      "dukkan": "Dükkân",
+      "depo": "Depo / atölye",
+      "bina": "Komple bina",
+      "diger": "Diğer"
+    },
+    "islemler": {
+      "satilik": "Satılık",
+      "kiralik": "Kiralık",
+      "kat-karsiligi": "Kat karşılığı"
+    }
+  },
+
+  "vatandas_talepleri": [
+    {
+      "no": "T-1001", "tarih": "2026-11-16", "kategori": "satilik-konut", "tur": "daire", "islem": "satilik",
+      "ilce": "Kadıköy", "mahalle": "Göztepe", "butce_min": 9000000, "butce_max": 12000000, "m2": 110, "oda": "3+1",
+      "baslik": "Göztepe'de metroya yakın 3+1 daire arıyorum",
+      "ozet": "Asansörlü, otoparklı, en fazla 15 yaşında bina. Ara kat tercih.",
+      "durum": "aktif", "ornek": true
+    },
+    {
+      "no": "T-1002", "tarih": "2026-11-15", "kategori": "kiralik-konut", "tur": "daire", "islem": "kiralik",
+      "ilce": "Kağıthane", "mahalle": "Merkez", "butce_min": 30000, "butce_max": 38000, "m2": 85, "oda": "2+1",
+      "baslik": "Kağıthane'de kiralık 2+1 daire",
+      "ozet": "Çekirdek aile, evcil hayvan yok. Ocak başı taşınma.",
+      "durum": "aktif", "ornek": true
+    },
+    {
+      "no": "T-1003", "tarih": "2026-11-14", "kategori": "satilik-arsa", "tur": "arsa", "islem": "satilik",
+      "ilce": "Sultanbeyli", "mahalle": "", "butce_min": 6000000, "butce_max": 9000000, "m2": 500, "oda": "",
+      "baslik": "Sultanbeyli'de 500 m² üzeri tek tapu arsa",
+      "ozet": "İmarlı, yola cepheli. Hisseli tapu istenmiyor.",
+      "durum": "aktif", "ornek": true
+    },
+    {
+      "no": "T-1004", "tarih": "2026-11-13", "kategori": "kiraya-vermek", "tur": "daire", "islem": "kiralik",
+      "ilce": "Ataşehir", "mahalle": "Barbaros", "butce_min": 55000, "butce_max": null, "m2": 125, "oda": "3+1",
+      "baslik": "Ataşehir Barbaros'ta site içi 3+1 dairemi kiraya vermek istiyorum",
+      "ozet": "Havuzlu site, eşyasız. Kurumsal kiracı tercih edilir.",
+      "durum": "aktif", "ornek": true
+    },
+    {
+      "no": "T-1005", "tarih": "2026-11-12", "kategori": "ofis-dukkan", "tur": "ofis", "islem": "kiralik",
+      "ilce": "Şişli", "mahalle": "Mecidiyeköy", "butce_min": 60000, "butce_max": 90000, "m2": 150, "oda": "",
+      "baslik": "Mecidiyeköy'de metroya yürüme mesafesinde ofis",
+      "ozet": "12 kişilik ekip için, toplantı odası olan plaza katı.",
+      "durum": "aktif", "ornek": true
+    },
+    {
+      "no": "T-1006", "tarih": "2026-11-11", "kategori": "villa", "tur": "villa", "islem": "satilik",
+      "ilce": "Beykoz", "mahalle": "", "butce_min": 35000000, "butce_max": 50000000, "m2": 300, "oda": "5+2",
+      "baslik": "Beykoz'da bahçeli müstakil villa",
+      "ozet": "Site içi veya müstakil, en az 500 m² bahçe.",
+      "durum": "aktif", "ornek": true
+    },
+    {
+      "no": "T-1007", "tarih": "2026-11-10", "kategori": "satmak", "tur": "dukkan", "islem": "satilik",
+      "ilce": "Esenyurt", "mahalle": "", "butce_min": 7500000, "butce_max": null, "m2": 90, "oda": "",
+      "baslik": "Esenyurt'ta cadde üzeri kiracılı dükkânımı satmak istiyorum",
+      "ozet": "Kiracılı, düzenli kira geliri var. Tapusu hazır.",
+      "durum": "aktif", "ornek": true
+    },
+    {
+      "no": "T-1008", "tarih": "2026-11-09", "kategori": "kat-karsiligi", "tur": "arsa", "islem": "kat-karsiligi",
+      "ilce": "Kartal", "mahalle": "", "butce_min": null, "butce_max": null, "m2": 650, "oda": "",
+      "baslik": "Kartal'da kat karşılığı arsa",
+      "ozet": "Müteahhit firmamız için imarlı, kentsel dönüşüme uygun parsel.",
+      "durum": "aktif", "ornek": true
+    }
+  ],
+
+  "emlakci_talepleri": [
+    {
+      "no": "E-2001", "tarih": "2026-11-16", "kategori": "alici", "tur": "daire", "islem": "satilik",
+      "ilce": "", "mahalle": "", "butce_min": null, "butce_max": 5000000, "m2": null, "oda": "2+1",
+      "baslik": "İstanbul genelinde 5 milyon TL bütçeli daire arıyorum",
+      "ozet": "Nakit alıcım hazır. Krediye uygun, iskânlı daireler.",
+      "durum": "aktif", "ornek": true
+    },
+    {
+      "no": "E-2002", "tarih": "2026-11-15", "kategori": "kiraci", "tur": "daire", "islem": "kiralik",
+      "ilce": "Kağıthane", "mahalle": "", "butce_min": null, "butce_max": 35000, "m2": null, "oda": "2+1",
+      "baslik": "Kağıthane'de kiralık 2+1 daire arıyorum",
+      "ozet": "Kiracım hazır, ay sonu taşınmak istiyor.",
+      "durum": "aktif", "ornek": true
+    },
+    {
+      "no": "E-2003", "tarih": "2026-11-14", "kategori": "arsa-tarla", "tur": "arsa", "islem": "satilik",
+      "ilce": "Sultanbeyli", "mahalle": "", "butce_min": null, "butce_max": null, "m2": 500, "oda": "",
+      "baslik": "Sultanbeyli'de 500 m² üzeri tek tapu arsa arıyorum",
+      "ozet": "Yatırımcı müşterim için, imar durumu önemli.",
+      "durum": "aktif", "ornek": true
+    },
+    {
+      "no": "E-2004", "tarih": "2026-11-13", "kategori": "kat-karsiligi", "tur": "arsa", "islem": "kat-karsiligi",
+      "ilce": "", "mahalle": "", "butce_min": null, "butce_max": null, "m2": null, "oda": "",
+      "baslik": "Kat karşılığı arsa arıyorum",
+      "ozet": "Anadolu Yakası'nda, müteahhit müşterim için.",
+      "durum": "aktif", "ornek": true
+    },
+    {
+      "no": "E-2005", "tarih": "2026-11-12", "kategori": "satilik-portfoy", "tur": "bina", "islem": "satilik",
+      "ilce": "", "mahalle": "", "butce_min": null, "butce_max": null, "m2": null, "oda": "",
+      "baslik": "Yatırımcıma uygun ticari gayrimenkul arıyorum",
+      "ozet": "Kira getirisi olan dükkân, ofis katı veya komple bina.",
+      "durum": "aktif", "ornek": true
+    },
+    {
+      "no": "E-2006", "tarih": "2026-11-11", "kategori": "portfoyum-var", "tur": "daire", "islem": "satilik",
+      "ilce": "Beylikdüzü", "mahalle": "", "butce_min": null, "butce_max": null, "m2": null, "oda": "3+1",
+      "baslik": "Portföyümdeki daireye müşteri arıyorum",
+      "ozet": "Site içi 3+1, iş birliğine açığım, komisyon paylaşımlı.",
+      "durum": "aktif", "ornek": true
+    }
+  ]
+}

@@ -1,0 +1,94 @@
+{
+  "_aciklama": "Sitenin ayarları bu dosyadadır. GitHub'da düzenleyip kaydettiğinizde site birkaç dakika içinde otomatik yeniden oluşturulur.",
+
+  "site": {
+    "ad": "İstanbul Emlak Ağı",
+    "slogan": "İstanbul'un Gayrimenkul ve İş Birliği Ağı",
+    "kampanya_slogani": "Doğru Talep, Doğru Eşleşme, Güçlü İş Birliği!",
+    "site_url": "https://y73755-commits.github.io/istanbul-emlak-agi",
+    "google_site_verification": ""
+  },
+
+  "iletisim": {
+    "_aciklama": "WhatsApp numarasını 90 ile başlayan, boşluksuz yazın (ör. 905017017908). Sitedeki tüm WhatsApp butonları bu numarayı kullanır.",
+    "whatsapp": "905017017908",
+    "telefon_gosterim": "0501 701 79 08",
+    "hizmet_bolgesi": "Yalnızca İstanbul (39 ilçe)"
+  },
+
+  "ana_sayfa": {
+    "baslik": "İstanbul'da Gayrimenkul Aramak Artık Daha Kolay!",
+    "alt_aciklama": "İstanbul'un 39 ilçesinde gayrimenkul arayanları, emlak profesyonellerini ve iş birliği yapmak isteyen ofisleri tek platformda buluşturuyoruz."
+  },
+
+  "uyelik": {
+    "_aciklama": "ucretli_erisim_aktif false iken emlakçı üyeliği ücretsizdir ve ücretli paketler 'Yakında' olarak görünür. Vatandaş talepleri birikince true yapın. Fiyatı boş bırakılan paket 'Fiyat için yazın' olarak görünür.",
+    "ucretli_erisim_aktif": false,
+    "paketler": [
+      {
+        "id": "aylik",
+        "ad": "Aylık Üyelik",
+        "sure_gun": 30,
+        "fiyat": "",
+        "yayinda": true,
+        "one_cikan": false,
+        "aciklama": "Vatandaş taleplerine bir ay boyunca tam erişim."
+      },
+      {
+        "id": "uc-aylik",
+        "ad": "3 Aylık Üyelik",
+        "sure_gun": 90,
+        "fiyat": "",
+        "yayinda": false,
+        "one_cikan": false,
+        "aciklama": "Üç ay boyunca tam erişim."
+      },
+      {
+        "id": "alti-aylik",
+        "ad": "6 Aylık Üyelik",
+        "sure_gun": 180,
+        "fiyat": "",
+        "yayinda": false,
+        "one_cikan": false,
+        "aciklama": "Altı ay boyunca tam erişim."
+      },
+      {
+        "id": "yillik",
+        "ad": "Yıllık Üyelik",
+        "sure_gun": 365,
+        "fiyat": "",
+        "yayinda": true,
+        "one_cikan": true,
+        "aciklama": "Bir yıl boyunca tam erişim, en avantajlı paket."
+      }
+    ],
+    "ucretli_ozellikler": [
+      "Vatandaş taleplerinin tam açıklaması",
+      "Talep sahibinin adı ve telefonu (açık rızası alınmış olarak)",
+      "İlçe, mahalle, tür, bütçe ve tarihe göre filtreleme",
+      "Yeni talepleri ilk görenlerden olma",
+      "İş birliği paylaşımları dahil"
+    ],
+    "ucretsiz_ozellikler": [
+      "Onaylı emlakçı profili",
+      "Emlakçı iş birliği paylaşımları yapma ve görme",
+      "Vatandaş taleplerinin özetlerini görme",
+      "Favorilere ekleme"
+    ]
+  },
+
+  "talep_yayin_suresi_gun": 60,
+
+  "veri_sorumlusu": {
+    "_aciklama": "KVKK aydınlatma metninde görünen veri sorumlusu bilgileri. Şirket/şahıs unvanı ve adres belli olunca doldurun.",
+    "unvan": "",
+    "adres": "",
+    "eposta": "",
+    "mersis_vergi_no": ""
+  },
+
+  "olcum": {
+    "_aciklama": "Kimlikler boş kaldığı sürece hiçbir Google etiketi yüklenmez ve çerez bandı görünmez.",
+    "ga4_id": ""
+  }
+}
