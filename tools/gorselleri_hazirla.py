@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Görselleri hazırlar: data/gorseller.json listesindeki her görsel için
+"""Görselleri hazırlar (alanlar: ad, kaynak|unsplash, alt, oran, genislikler, odak, ton, parlaklik, kalite): data/gorseller.json listesindeki her görsel için
   1) kaynağı bulur (kaynak/ klasöründeki dosya ya da Unsplash kimliği; Unsplash ise indirir),
   2) bütün fotoğraflara aynı renk tonunu uygular (sitenin koyu lacivert + altın paletiyle uyumlu),
   3) "odak" noktasına göre kırpar (mobil, tablet, masaüstünde önemli kısım kesilmesin),
@@ -102,7 +102,7 @@ def kirp(im, oran, odak):
 
 def uret(g):
     yol, kimlik = kaynak_bul(g)
-    ayar = json.dumps([kimlik, g["oran"], g["genislikler"], g.get("odak", [.5, .5]), g.get("ton", 1.0), g.get("parlaklik"), TON_SURUMU])
+    ayar = json.dumps([kimlik, g["oran"], g["genislikler"], g.get("odak", [.5, .5]), g.get("ton", 1.0), g.get("parlaklik"), g.get("kalite"), TON_SURUMU])
     anahtar = hashlib.sha1(ayar.encode()).hexdigest()[:16]
     ciktilar = [os.path.join(OUT, f'{g["ad"]}-{w}.webp') for w in g["genislikler"]]
     if not HEPSI and imza.get(g["ad"]) == anahtar and all(os.path.exists(c) for c in ciktilar):
@@ -116,7 +116,7 @@ def uret(g):
         k = im if im.width == w else im.resize((w, h), Image.LANCZOS)
         if w < im.width * .6:
             k = k.filter(ImageFilter.UnsharpMask(radius=0.8, percent=40, threshold=2))
-        k.save(c, "WEBP", quality=70 if w >= 1600 else 74, method=6)
+        k.save(c, "WEBP", quality=g.get("kalite") or (70 if w >= 1600 else 74), method=6)
         print(f'  {os.path.basename(c)}  {w}x{h}  {os.path.getsize(c) // 1024} KB')
     imza[g["ad"]] = anahtar
     return True

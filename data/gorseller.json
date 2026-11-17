@@ -7,12 +7,12 @@
     {"ad": "satilik-konut", "unsplash": "photo-1525953776754-6c4b7ee655ab", "alt": "Modern konut binasının cephesi", "oran": "4:3", "genislikler": [480, 960], "odak": [0.5, 0.5]},
     {"ad": "kiralik-konut", "kaynak": "kaynak/gorseller/02-konut-talepleri.webp", "alt": "Deniz manzaralı, geniş pencereli modern salon", "oran": "4:3", "genislikler": [480, 960], "odak": [0.5, 0.55], "ton": 0.6},
     {"ad": "satilik-arsa", "kaynak": "kaynak/gorseller/03-arsa-talepleri.webp", "alt": "Gün batımında yeşil arazi ve toprak yol", "oran": "4:3", "genislikler": [480, 960], "odak": [0.5, 0.55], "ton": 0.6},
-    {"ad": "tarla", "unsplash": "photo-1495107334309-fcf20504a5ab", "alt": "Gün batımında tarla", "oran": "4:3", "genislikler": [480, 960], "odak": [0.5, 0.5]},
-    {"ad": "kat-karsiligi", "unsplash": "photo-1638519922476-50688bb1f318", "alt": "Vinçli yeni bina inşaatı", "oran": "4:3", "genislikler": [480, 960], "odak": [0.5, 0.5]},
+    {"ad": "tarla", "unsplash": "photo-1495107334309-fcf20504a5ab", "alt": "Gün batımında tarla", "oran": "4:3", "genislikler": [480, 960], "odak": [0.5, 0.5], "ton": 1.6, "parlaklik": 0.9, "kalite": 62},
+    {"ad": "kat-karsiligi", "unsplash": "photo-1638519922476-50688bb1f318", "alt": "Vinçli yeni bina inşaatı", "oran": "4:3", "genislikler": [480, 960], "odak": [0.5, 0.5], "ton": 1.4, "parlaklik": 0.9},
     {"ad": "kiralik-ofis", "unsplash": "photo-1497366811353-6870744d04b2", "alt": "Cam bölmeli modern ofis", "oran": "4:3", "genislikler": [480, 960], "odak": [0.5, 0.5]},
     {"ad": "ticari", "kaynak": "kaynak/gorseller/04-ofis-ve-ticari-gayrimenkul.webp", "alt": "Cam cepheli modern iş binasının girişi", "oran": "4:3", "genislikler": [480, 960], "odak": [0.48, 0.55], "ton": 0.6},
     {"ad": "dukkan", "unsplash": "photo-1746886544129-9e4c9733630b", "alt": "Akşam ışıklarında vitrini ve girişi görünen dükkân cephesi", "oran": "4:3", "genislikler": [480, 960], "odak": [0.5, 0.5]},
-    {"ad": "villa", "unsplash": "photo-1707189856923-46dd41ea2bdc", "alt": "Havuzlu modern villa", "oran": "4:3", "genislikler": [480, 960], "odak": [0.5, 0.5]},
+    {"ad": "villa", "unsplash": "photo-1707189856923-46dd41ea2bdc", "alt": "Havuzlu modern villa", "oran": "4:3", "genislikler": [480, 960], "odak": [0.5, 0.5], "ton": 1.5, "parlaklik": 0.92},
     {"ad": "is-birligi", "kaynak": "kaynak/gorseller/05-emlakci-is-birligi.webp", "alt": "Proje planı üzerinde birlikte çalışan emlak danışmanları", "oran": "4:3", "genislikler": [480, 960], "odak": [0.5, 0.45], "ton": 0.6}
   ]
 }
