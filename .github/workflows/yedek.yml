@@ -36,6 +36,10 @@ jobs:
           if [ -z "$DB_URL" ] || [ -z "$PAROLA" ]; then
             echo "::warning::SUPABASE_DB_URL ve YEDEK_PAROLASI tanımlı değil; yedek alınmadı. Kurulum adımları yedek.yml dosyasının başında."
             echo "ATLA=1" >> "$GITHUB_ENV"
+          elif [ "${#PAROLA}" -lt 20 ]; then
+            echo "::warning::YEDEK_PAROLASI 20 karakterden kısa. Yedek yine alınıyor ama herkese açık depoda daha uzun bir parola önerilir."
+          else
+            echo "Yedek parolası uzunluk kontrolü: uygun."
           fi
       - uses: supabase/setup-cli@v1
         if: env.ATLA != '1'
@@ -70,7 +74,7 @@ jobs:
           ls -la yedek
           tar czf yedek.tgz yedek
           AD="yedek-$(date -u +%Y%m%d-%H%M).tgz.gpg"
-          gpg --batch --yes --pinentry-mode loopback --passphrase "$PAROLA" --symmetric --cipher-algo AES256 -o "$AD" yedek.tgz
+          gpg --batch --yes --pinentry-mode loopback --passphrase "$PAROLA" --symmetric --cipher-algo AES256 --s2k-digest-algo SHA512 --s2k-count 65011712 -o "$AD" yedek.tgz
           rm -rf yedek yedek.tgz
           echo "DOSYA=$AD" >> "$GITHUB_ENV"
       - uses: actions/upload-artifact@v4

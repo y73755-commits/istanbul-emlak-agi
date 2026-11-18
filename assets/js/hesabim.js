@@ -27,7 +27,7 @@
 
     if (emlakci) html += emlakciDurum(p);
     var yeniLink = emlakci ? (p.durum === "onayli" ? P + "portfoy-is-birligi#paylas" : "") : P + "talep-olustur";
-    html += '<section class="panel-sec"><div class="sec-head row"><h2>' + (emlakci ? "İş birliği paylaşımlarım" : "Taleplerim") + "</h2>" +
+    html += '<section class="panel-sec"><div class="sec-head row"><h2>' + (emlakci ? "Taleplerim ve paylaşımlarım" : "Taleplerim") + "</h2>" +
       (yeniLink ? '<a class="btn btn-gold btn-sm" href="' + yeniLink + '">' + (emlakci ? "Yeni paylaşım" : "Yeni talep") + "</a>" : "") + '</div><div data-taleplerim class="liste-tablo"><p class="muted">Yükleniyor…</p></div></section>';
     if (emlakci) html += '<section class="panel-sec"><h2>Favorilerim</h2><div data-favoriler class="tgrid"><p class="muted">Yükleniyor…</p></div></section>';
     html += '<section class="panel-sec"><h2>Bilgilerim</h2>' + profilForm(p) + "</section>";
