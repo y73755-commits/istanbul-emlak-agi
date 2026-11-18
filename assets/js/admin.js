@@ -71,7 +71,8 @@
         '<div class="qr"><img src="' + esc(qr) + '" alt="İki adımlı doğrulama QR kodu" width="264" height="264"></div>' +
         (t.uri ? '<p class="small"><a class="btn btn-ghost btn-sm" href="' + esc(t.uri) + '">Bu telefondaysanız: doğrulama uygulamasında aç</a></p>' : "") +
         '<p class="small muted">QR okutamıyorsanız uygulamada “Kurulum anahtarı gir” seçip bu anahtarı yazın (tür: zamana dayalı):</p>' +
-        '<p class="totp-anahtar"><code data-anahtar>' + esc(String(t.secret || "").replace(/(.{4})/g, "$1 ").trim()) + '</code> <button class="btn btn-ghost btn-sm" type="button" data-kopyala>Kopyala</button></p>');
+        '<p class="totp-anahtar"><code data-anahtar>' + esc(String(t.secret || "").replace(/(.{4})/g, "$1 ").trim()) + '</code> <button class="btn btn-ghost btn-sm" type="button" data-kopyala>Kopyala</button></p>' +
+        '<p class="small"><strong>Kurtarma için:</strong> Bu kurulum anahtarını kâğıda yazıp evde güvenli bir yerde saklayın; fotoğrafını çekmeyin, kimseyle paylaşmayın. Telefonunuz kaybolursa yeni telefondaki doğrulama uygulamasına bu anahtarı girerek aynı kodları yeniden alırsınız.</p>');
       var kb = $("[data-kopyala]");
       if (kb) kb.addEventListener("click", function () {
         var yaz = navigator.clipboard && navigator.clipboard.writeText ? navigator.clipboard.writeText(t.secret) : Promise.reject();
