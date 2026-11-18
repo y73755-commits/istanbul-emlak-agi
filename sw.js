@@ -1,6 +1,6 @@
 // İstanbul Emlak Ağı — service worker (otomatik üretilir)
-const V = "iea-4b6759d2fd";
-const CORE = ["./", "index.html", "cevrimdisi.html", "assets/css/style.css?v=ad3719f5", "assets/js/main.js?v=57d32b57", "assets/js/ilceler.js?v=b22fda2c",
+const V = "iea-5a5b282c2b";
+const CORE = ["./", "cevrimdisi", "assets/css/style.css?v=c9986820", "assets/js/main.js?v=0635749c", "assets/js/ilceler.js?v=b22fda2c",
   "assets/fonts/manrope-latin-wght-normal.woff2", "assets/fonts/playfair-display-latin-wght-normal.woff2",
   "assets/icons/logo-44.webp", "assets/icons/icon-192.png"];
 self.addEventListener("install", e => { e.waitUntil(caches.open(V).then(c => c.addAll(CORE)).then(() => self.skipWaiting())); });
@@ -10,7 +10,7 @@ self.addEventListener("fetch", e => {
   if (r.method !== "GET" || new URL(r.url).origin !== location.origin) return;
   if (r.mode === "navigate") {
     e.respondWith(fetch(r).then(res => { const cp = res.clone(); caches.open(V).then(c => c.put(r, cp)); return res; })
-      .catch(() => caches.match(r).then(m => m || caches.match("cevrimdisi.html"))));
+      .catch(() => caches.match(r).then(m => m || caches.match("cevrimdisi"))));
     return;
   }
   e.respondWith(caches.match(r).then(m => m || fetch(r).then(res => {

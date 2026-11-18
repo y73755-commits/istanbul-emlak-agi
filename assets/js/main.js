@@ -312,7 +312,7 @@
     else if (choice !== "hayir") {
       var bar = document.createElement("div");
       bar.className = "consent-bar"; bar.setAttribute("role", "dialog"); bar.setAttribute("aria-label", "Çerez tercihi");
-      bar.innerHTML = '<p>Siteyi geliştirmek için ziyaret istatistiklerini (Google Analytics) kullanmak istiyoruz. İzin vermezseniz hiçbir ölçüm aracı yüklenmez. <a class="link-gold" href="' + CFG.base + 'cerez-politikasi.html">Çerez politikası</a></p><div class="actions"><button class="btn btn-gold btn-sm" type="button" data-c="evet">Kabul et</button><button class="btn btn-ghost btn-sm" type="button" data-c="hayir">Reddet</button></div>';
+      bar.innerHTML = '<p>Siteyi geliştirmek için ziyaret istatistiklerini (Google Analytics) kullanmak istiyoruz. İzin vermezseniz hiçbir ölçüm aracı yüklenmez. <a class="link-gold" href="' + CFG.base + 'cerez-politikasi">Çerez politikası</a></p><div class="actions"><button class="btn btn-gold btn-sm" type="button" data-c="evet">Kabul et</button><button class="btn btn-ghost btn-sm" type="button" data-c="hayir">Reddet</button></div>';
       document.body.appendChild(bar);
       bar.addEventListener("click", function (ev) {
         var c = ev.target.getAttribute("data-c"); if (!c) return;

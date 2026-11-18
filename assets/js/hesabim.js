@@ -12,9 +12,9 @@
 
   function yukle() {
     A.oturum().then(function (s) {
-      if (!s) { location.replace(P + "giris.html?donus=hesabim.html"); return; }
+      if (!s) { location.replace(P + "giris?donus=hesabim"); return; }
       return A.rpc("profilim").then(function (p) { me = p; ciz(); });
-    }).catch(function (e) { root.innerHTML = '<div class="empty"><p>' + esc(e.message) + '</p><a class="btn btn-gold" href="' + P + 'giris.html?donus=hesabim.html">Giriş yap</a></div>'; });
+    }).catch(function (e) { root.innerHTML = '<div class="empty"><p>' + esc(e.message) + '</p><a class="btn btn-gold" href="' + P + 'giris?donus=hesabim">Giriş yap</a></div>'; });
   }
 
   function rozet(d) { var x = DURUM[d] || [d, "gri"]; return '<span class="durum ' + x[1] + '">' + x[0] + "</span>"; }
@@ -23,10 +23,10 @@
     var p = me, emlakci = p.rol === "emlakci", html = "";
     html += '<div class="panel-head card"><div><p class="kicker">' + (p.rol === "yonetici" ? "Yönetici" : emlakci ? "Emlak danışmanı" : "Vatandaş") + "</p><h2>Merhaba" + (p.ad_soyad ? ", " + esc(p.ad_soyad) : "") + "</h2>" +
       '<p class="muted">' + esc(p.eposta || "") + (p.telefon ? " · " + esc(A.fmt.tel(p.telefon)) + (p.telefon_onayli ? "" : " (doğrulanmadı)") : "") + (p.ofis_adi ? " · " + esc(p.ofis_adi) : "") + "</p></div>" +
-      '<div class="actions">' + (p.rol === "yonetici" ? '<a class="btn btn-gold btn-sm" href="' + P + 'yonetici.html">Yönetici paneli</a>' : "") + '<button class="btn btn-ghost btn-sm" type="button" data-cikis>Çıkış yap</button></div></div>';
+      '<div class="actions">' + (p.rol === "yonetici" ? '<a class="btn btn-gold btn-sm" href="' + P + 'yonetici">Yönetici paneli</a>' : "") + '<button class="btn btn-ghost btn-sm" type="button" data-cikis>Çıkış yap</button></div></div>';
 
     if (emlakci) html += emlakciDurum(p);
-    var yeniLink = emlakci ? (p.durum === "onayli" ? P + "portfoy-is-birligi.html#paylas" : "") : P + "talep-olustur.html";
+    var yeniLink = emlakci ? (p.durum === "onayli" ? P + "portfoy-is-birligi#paylas" : "") : P + "talep-olustur";
     html += '<section class="panel-sec"><div class="sec-head row"><h2>' + (emlakci ? "İş birliği paylaşımlarım" : "Taleplerim") + "</h2>" +
       (yeniLink ? '<a class="btn btn-gold btn-sm" href="' + yeniLink + '">' + (emlakci ? "Yeni paylaşım" : "Yeni talep") + "</a>" : "") + '</div><div data-taleplerim class="liste-tablo"><p class="muted">Yükleniyor…</p></div></section>';
     if (emlakci) html += '<section class="panel-sec"><h2>Favorilerim</h2><div data-favoriler class="tgrid"><p class="muted">Yükleniyor…</p></div></section>';
@@ -40,7 +40,7 @@
   function emlakciDurum(p) {
     var wa = "https://wa.me/" + CFG.wa + "?text=" + encodeURIComponent("Merhaba, İstanbul Emlak Ağı üyeliğim hakkında yazıyorum.\nAd soyad: " + (p.ad_soyad || "") + "\nEmlak ofisi: " + (p.ofis_adi || ""));
     if (p.durum === "beklemede") return '<div class="notice">' + "<p><strong>Başvurunuz inceleniyor.</strong> Yetki belgeniz kontrol edildikten sonra hesabınız onaylanacak. Onaylandığınızda iş birliği paylaşımı yapabilirsiniz.</p></div>";
-    if (p.durum === "reddedildi") return '<div class="notice red"><p><strong>Başvurunuz onaylanmadı.</strong> ' + esc(p.red_nedeni || "") + ' Bilgilerinizi güncelleyip <a class="link-gold" href="' + P + 'emlakci-uyelik.html">tekrar başvurabilirsiniz</a>.</p></div>';
+    if (p.durum === "reddedildi") return '<div class="notice red"><p><strong>Başvurunuz onaylanmadı.</strong> ' + esc(p.red_nedeni || "") + ' Bilgilerinizi güncelleyip <a class="link-gold" href="' + P + 'emlakci-uyelik">tekrar başvurabilirsiniz</a>.</p></div>';
     if (p.durum === "engelli") return '<div class="notice red"><p><strong>Hesabınız askıya alındı.</strong> Bilgi için WhatsApp\'tan yazın.</p></div>';
     var s = '<div class="uyelik-kutu card"><div><p class="kicker">Ücretli üyelik</p>';
     if (p.uyelik_bitis) {
@@ -51,7 +51,7 @@
       if (uyar) s = '<div class="notice"><p><strong>Üyeliğinizin bitmesine ' + p.kalan_gun + " gün kaldı.</strong> Süre dolduğunda vatandaş taleplerinin detay erişimi otomatik kapanır.</p></div>" + s;
     } else {
       s += "<h3>Aktif ücretli üyeliğiniz yok</h3><p>İş birliği paylaşımlarını ücretsiz kullanabilirsiniz. Vatandaş taleplerinin detay ve iletişim bilgisi için üyelik gerekir.</p></div>" +
-        '<div class="actions"><a class="btn btn-line btn-sm" href="' + P + 'uyelik-paketleri.html">Paketler</a><a class="btn btn-gold btn-sm" target="_blank" rel="noopener" href="' + wa + '">WhatsApp\'tan üyelik al</a></div>';
+        '<div class="actions"><a class="btn btn-line btn-sm" href="' + P + 'uyelik-paketleri">Paketler</a><a class="btn btn-gold btn-sm" target="_blank" rel="noopener" href="' + wa + '">WhatsApp\'tan üyelik al</a></div>';
     }
     return s + "</div>";
   }
@@ -192,7 +192,7 @@
       A.rpc("talep_sil", { p_id: +b.getAttribute("data-sil") }).then(taleplerim).catch(function (e) { alert(e.message); });
     } else if (ev.target.closest("[data-hesap-sil]")) {
       if (!confirm("Hesabınız ve tüm verileriniz kalıcı olarak silinecek. Bu işlem geri alınamaz. Devam edilsin mi?")) return;
-      A.rpc("hesabimi_sil").then(function () { return A.sb().then(function (c) { return c.auth.signOut(); }); }).finally(function () { try { localStorage.clear(); } catch (e) {} location.replace(P + "index.html"); });
+      A.rpc("hesabimi_sil").then(function () { return A.sb().then(function (c) { return c.auth.signOut(); }); }).finally(function () { try { localStorage.clear(); } catch (e) {} location.replace(P + ""); });
     }
   });
 

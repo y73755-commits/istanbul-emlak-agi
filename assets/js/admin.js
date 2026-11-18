@@ -25,7 +25,7 @@
     var btn = $("[data-a-google]");
     btn.addEventListener("click", function () {
       btn.disabled = true;
-      A.googleGiris("yonetici.html").catch(function (e) { btn.disabled = false; var x = $("[data-err]", root); x.textContent = e.message; x.hidden = false; });
+      A.googleGiris("yonetici").catch(function (e) { btn.disabled = false; var x = $("[data-err]", root); x.textContent = e.message; x.hidden = false; });
     });
   }
   function rolKontrol() {

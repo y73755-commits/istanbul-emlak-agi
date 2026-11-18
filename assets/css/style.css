@@ -278,8 +278,10 @@ p{margin:0}
 .ilce-set{min-inline-size:0;min-width:0;border:1px solid var(--line);border-radius:12px;padding:14px 16px 16px;margin:0 0 14px}
 .ilce-set legend{padding:0 8px;color:var(--beige);font-weight:700;font-size:.88rem;display:flex;align-items:center;gap:10px}
 .mini{border:1px solid var(--line2);background:transparent;border-radius:999px;min-height:44px;padding:6px 14px;font-size:.75rem;color:var(--gold);cursor:pointer}
-.ilce-checks{display:grid;grid-template-columns:repeat(4,1fr);gap:10px 12px}
-@media (max-width:800px){.ilce-checks{grid-template-columns:repeat(2,1fr)}}
+.ilce-checks{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px 12px}
+.ilce-checks .check span{min-width:0;overflow-wrap:anywhere}
+@media (max-width:800px){.ilce-checks{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:380px){.ilce-checks{grid-template-columns:minmax(0,1fr)}}
 .side{display:grid;gap:16px;position:sticky;top:calc(var(--hh) + 20px)}
 @media (max-width:980px){.side{position:static}}
 .side-card{padding:24px}

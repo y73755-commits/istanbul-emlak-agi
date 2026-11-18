@@ -171,7 +171,7 @@
     if (id === "ornek") return uyari("Örnek kayıt", "Bu kart, platformun nasıl çalışacağını göstermek için hazırlanmış bir örnektir. " + kural);
     if (!oturumVarGibi()) {
       return uyari("Üyelere özel bilgi", kural + " Bu bilgiler sayfaya hiç gönderilmez; yetkiniz giriş yaptığınızda sunucuda kontrol edilir.",
-        '<a class="btn btn-gold" href="' + P + "giris.html?donus=" + encodeURIComponent(location.pathname.replace(P, "") + location.search) + '">Giriş yap</a><a class="btn btn-line" href="' + P + 'uyelik-paketleri.html">Üyelik paketleri</a>');
+        '<a class="btn btn-gold" href="' + P + "giris?donus=" + encodeURIComponent(location.pathname.replace(P, "") + location.search) + '">Giriş yap</a><a class="btn btn-line" href="' + P + 'uyelik-paketleri">Üyelik paketleri</a>');
     }
     modal('<h2>Detay ve iletişim</h2><p class="muted">Yetkiniz kontrol ediliyor…</p>');
     rpc("talep_detay", { p_id: +id }).then(function (d) {
@@ -185,7 +185,7 @@
         '<div class="actions"><a class="btn btn-gold" href="tel:+' + tel + '">Ara</a><a class="btn btn-line" target="_blank" rel="noopener" href="https://wa.me/' + tel + '">WhatsApp</a></div>' +
         '<p class="small muted">Bu görüntüleme kayıt altına alınmıştır. İletişim bilgisini yalnızca bu talep için kullanabilirsiniz.</p>');
     }).catch(function (e) {
-      uyari("Erişim yok", hata(e), '<a class="btn btn-gold" href="' + P + 'uyelik-paketleri.html">Üyelik paketleri</a><a class="btn btn-line" href="' + P + 'hesabim.html">Hesabım</a>');
+      uyari("Erişim yok", hata(e), '<a class="btn btn-gold" href="' + P + 'uyelik-paketleri">Üyelik paketleri</a><a class="btn btn-line" href="' + P + 'hesabim">Hesabım</a>');
     });
   });
 
@@ -231,7 +231,7 @@
   /* ---------------- üst menü: giriş durumu ---------------- */
   function menuGuncelle() {
     if (!oturumVarGibi()) return;
-    $$(".nav-cta").forEach(function (a) { a.href = P + "hesabim.html"; var s = a.querySelector("span"); if (s) s.textContent = "Hesabım"; });
+    $$(".nav-cta").forEach(function (a) { a.href = P + "hesabim"; var s = a.querySelector("span"); if (s) s.textContent = "Hesabım"; });
   }
 
   /* ---------------- paketler sayfası ---------------- */
@@ -374,7 +374,7 @@
       if (!r || !r.no) throw new Error("Talep kaydedilemedi. Lütfen tekrar deneyin.");
       bekle(f, false);
       basari(f, "<h2>Talebiniz alındı: " + esc(r.no) + "</h2><p>" + (r.durum === "yayinda" ? "Talebiniz yayına alındı." : "Talebiniz kontrol edildikten sonra özet olarak yayınlanacak.") +
-        ' Talebinizi <a class="link-gold" href="' + P + 'hesabim.html">Hesabım</a> sayfasından görüntüleyebilir, düzenleyebilir veya kapatabilirsiniz.</p>');
+        ' Talebinizi <a class="link-gold" href="' + P + 'hesabim">Hesabım</a> sayfasından görüntüleyebilir, düzenleyebilir veya kapatabilirsiniz.</p>');
     }).catch(function (e) { bekle(f, false); formHata(f, e.yonlendirme ? "" : e.message); });
   });
 
@@ -394,7 +394,7 @@
     }).then(function (p) {
       if (!p || p.durum !== "beklemede") throw new Error("Başvuru kaydedilemedi. Lütfen tekrar deneyin.");
       bekle(f, false);
-      basari(f, "<h2>Başvurunuz alındı</h2><p>Yetki belgeniz ve bilgileriniz kontrol edildikten sonra hesabınız onaylanacak. Durumu <a class=\"link-gold\" href=\"" + P + "hesabim.html\">Hesabım</a> sayfasından takip edebilirsiniz.</p>");
+      basari(f, "<h2>Başvurunuz alındı</h2><p>Yetki belgeniz ve bilgileriniz kontrol edildikten sonra hesabınız onaylanacak. Durumu <a class=\"link-gold\" href=\"" + P + "hesabim\">Hesabım</a> sayfasından takip edebilirsiniz.</p>");
     }).catch(function (e) { bekle(f, false); formHata(f, e.yonlendirme ? "" : e.message); });
   });
 
@@ -421,7 +421,7 @@
       rpc("talep_olustur", { p: veri }).then(function (r) {
         if (!r || !r.no) throw new Error("Paylaşım kaydedilemedi. Lütfen tekrar deneyin.");
         bekle(f, false);
-        basari(f, "<h2>Paylaşımınız alındı: " + esc(r.no) + "</h2><p>Kontrol edildikten sonra emlakçı talepleri arasında yayınlanacak. <a class=\"link-gold\" href=\"" + P + "hesabim.html\">Hesabım</a></p>");
+        basari(f, "<h2>Paylaşımınız alındı: " + esc(r.no) + "</h2><p>Kontrol edildikten sonra emlakçı talepleri arasında yayınlanacak. <a class=\"link-gold\" href=\"" + P + "hesabim\">Hesabım</a></p>");
       }).catch(function (e) { bekle(f, false); formHata(f, e.message); });
     });
   }
@@ -458,8 +458,8 @@
   /* ---------------- giriş sayfası ---------------- */
   var gBox = $("[data-giris]");
   if (gBox) {
-    var donus = new URLSearchParams(location.search).get("donus") || "hesabim.html";
-    if (!/^[a-z0-9\-\/]+\.html(\?.*)?$/i.test(donus)) donus = "hesabim.html";
+    var donus = (new URLSearchParams(location.search).get("donus") || "hesabim").replace(/\.html(?=$|\?)/, "");
+    if (!/^[a-z0-9\-\/]+(\?.*)?$/i.test(donus)) donus = "hesabim";
     if (oturumVarGibi() && !donusVar) IEA.oturum().then(function (s) { if (s) location.replace(P + donus); });
     document.addEventListener("iea:giris", function () { location.replace(P + donus); });
     $$("[data-google-giris]", gBox).forEach(function (btn) {
@@ -474,7 +474,7 @@
   document.addEventListener("click", function (ev) {
     if (!ev.target.closest("[data-cikis]")) return;
     ev.preventDefault();
-    sb().then(function (c) { return c.auth.signOut(); }).finally(function () { try { localStorage.removeItem(STORE); sessionStorage.clear(); } catch (e) {} location.replace(P + "index.html"); });
+    sb().then(function (c) { return c.auth.signOut(); }).finally(function () { try { localStorage.removeItem(STORE); sessionStorage.clear(); } catch (e) {} location.replace(P + ""); });
   });
 
   /* ---------------- favoriler: giriş yapılmışsa veritabanında da tutulur ---------------- */

@@ -241,7 +241,7 @@ async def main():
 
         # 1) ZİYARETÇİ: detay düğmesi kuralı açıklar, gizli bilgi sayfaya gelmez
         ctx, pg, h = await yeni(b, s)
-        await pg.goto(BASE + "musteri-talepleri.html"); await pg.wait_for_timeout(800)
+        await pg.goto(BASE + "musteri-talepleri"); await pg.wait_for_timeout(800)
         icerik = await pg.content()
         kayit("Ziyaretçi: listede veritabanı kaydı görünüyor", "Göztepe'de 3+1 daire arıyorum" in icerik)
         kayit("Ziyaretçi: sayfa kaynağında gizli açıklama/telefon yok", "GİZLİ AÇIKLAMA" not in icerik and "905551112233" not in icerik)
@@ -253,7 +253,7 @@ async def main():
 
         # 2) VATANDAŞ: formu doldurur → Google ile giriş → taslak geri gelir → gönderir; sunucu hatasında başarı mesajı çıkmaz
         ctx, pg, h = await yeni(b, s)
-        await pg.goto(BASE + "talep-olustur.html")
+        await pg.goto(BASE + "talep-olustur")
         f = "form[data-db-form=vatandas]"
         async def doldur():
             await pg.select_option(f + " [name=kategori]", "satilik-konut")
@@ -285,7 +285,7 @@ async def main():
         await pg.wait_for_selector("[data-done]:not([hidden])", timeout=8000)
         done = await pg.inner_text("[data-done]")
         kayit("Vatandaş: talep kaydedildi, iletişim telefonu formdan alındı", "T-1002" in done and s.talepler[-1]["tel"] == "905321112233", done[:60].replace("\n", " "))
-        await pg.goto(BASE + "hesabim.html"); await pg.wait_for_selector("[data-taleplerim] .satir", timeout=8000)
+        await pg.goto(BASE + "hesabim"); await pg.wait_for_selector("[data-taleplerim] .satir", timeout=8000)
         t = await pg.inner_text("[data-hesabim]")
         kayit("Vatandaş: Hesabım'da talebi ve durumunu görüyor", "Beşiktaş'ta 2+1" in t and ("İnceleniyor" in t or "inceleniyor" in t.lower()))
         duz = pg.locator("[data-taleplerim] button", has_text=re.compile("Düzenle"))
@@ -310,7 +310,7 @@ async def main():
 
         # 3) ONAYSIZ EMLAKÇI: başvurur, beklemede görür, detay alamaz
         ctx, pg, h = await yeni(b, s)
-        await pg.goto(BASE + "emlakci-uyelik.html")
+        await pg.goto(BASE + "emlakci-uyelik")
         f = "form[data-db-form=emlakci]"
         await pg.fill(f + " [name=ad]", "Test Başvuran"); await pg.fill(f + " [name=ofis]", "A Emlak")
         await pg.fill(f + " [name=tel]", "0533 444 55 66"); await pg.fill(f + " [name=eposta]", "a@test.local")
@@ -324,10 +324,10 @@ async def main():
         await pg.click(f + " [type=submit]")
         await pg.wait_for_selector("[data-done]:not([hidden])", timeout=8000)
         kayit("Onaysız emlakçı: Google girişiyle başvuru kaydedildi (telefon iletişim alanı)", s.kullanicilar["bek"]["durum"] == "beklemede" and s.kullanicilar["bek"]["telefon"] == "905334445566")
-        await pg.goto(BASE + "hesabim.html"); await pg.wait_for_selector("[data-hesabim] .panel-head", timeout=8000)
+        await pg.goto(BASE + "hesabim"); await pg.wait_for_selector("[data-hesabim] .panel-head", timeout=8000)
         t = await pg.inner_text("[data-hesabim]")
         kayit("Onaysız emlakçı: panelde 'Başvurunuz inceleniyor' görünüyor", "inceleniyor" in t)
-        await pg.goto(BASE + "musteri-talepleri.html"); await pg.wait_for_timeout(800)
+        await pg.goto(BASE + "musteri-talepleri"); await pg.wait_for_timeout(800)
         await pg.click('[data-detay="1"]'); await pg.wait_for_timeout(700)
         m = await pg.inner_text("dialog.modal[open]")
         kayit("Onaysız emlakçı: vatandaş iletişimini alamıyor", "905551112233" not in m and "555 111" not in m, m[:70].replace("\n", " "))
@@ -337,15 +337,15 @@ async def main():
         # 4-6) ONAYLI ÜCRETSİZ / AKTİF ÜCRETLİ / SÜRESİ BİTEN: giriş sayfasından SMS ile giriş
         for kim, ad, beklenen in [("ucz", "Onaylı ücretsiz emlakçı", False), ("ucr", "Aktif ücretli emlakçı", True), ("bit", "Süresi biten üye", False)]:
             ctx, pg, h = await yeni(b, s, 390)
-            await pg.goto(BASE + "giris.html")
+            await pg.goto(BASE + "giris")
             s.siradaki = kim
             await pg.click("[data-google-giris]")
-            await pg.wait_for_url("**/hesabim.html", timeout=10000)
+            await pg.wait_for_url("**/hesabim", timeout=10000)
             await pg.wait_for_selector("[data-hesabim] .panel-head", timeout=8000)
             t = await pg.inner_text("[data-hesabim]")
             if beklenen:
                 kayit(f"{ad}: panelde üyelik bitiş tarihi ve kalan gün görünüyor", "Kalan" in t, re.sub(r"\s+", " ", t)[:120])
-            await pg.goto(BASE + "musteri-talepleri.html"); await pg.wait_for_timeout(900)
+            await pg.goto(BASE + "musteri-talepleri"); await pg.wait_for_timeout(900)
             await pg.click('[data-detay="1"]'); await pg.wait_for_timeout(900)
             m = await pg.inner_text("dialog.modal[open]")
             gordu = "0555 111 22 33" in m or "905551112233" in m
@@ -356,7 +356,7 @@ async def main():
         s.talepler.append(dict(s.talepler[0], id=len(s.talepler) + 1, no="T-1009", durum="inceleniyor", baslik="İncelenecek test talebi"))
         # 7) YÖNETİCİ: e-posta+şifre → iki adımlı doğrulama kurulumu → panel → onay ve üyelik
         ctx, pg, h = await yeni(b, s)
-        await pg.goto(BASE + "yonetici.html")
+        await pg.goto(BASE + "yonetici")
         s.siradaki = "ucz"
         await pg.click("[data-a-google]"); await pg.wait_for_timeout(1500)
         t0 = await pg.inner_text("[data-yonetici]")
@@ -411,10 +411,10 @@ async def main():
 
         # 8) Onaysız→onaylanan emlakçı artık iş birliği paylaşımı yapabiliyor
         ctx, pg, h = await yeni(b, s)
-        await pg.goto(BASE + "giris.html")
+        await pg.goto(BASE + "giris")
         s.siradaki = "bek"
-        await pg.click("[data-google-giris]"); await pg.wait_for_url("**/hesabim.html", timeout=10000)
-        await pg.goto(BASE + "portfoy-is-birligi.html"); await pg.wait_for_timeout(900)
+        await pg.click("[data-google-giris]"); await pg.wait_for_url("**/hesabim", timeout=10000)
+        await pg.goto(BASE + "portfoy-is-birligi"); await pg.wait_for_timeout(900)
         acik = await pg.locator("form[data-db-form=isbirligi]").is_visible()
         kayit("Onaylanan emlakçı: iş birliği formu açıldı", acik)
         await ctx.close()

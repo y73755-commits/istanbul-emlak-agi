@@ -4,7 +4,7 @@ from playwright.async_api import async_playwright
 BASE = __import__("os").environ.get("TEST_BASE", "http://127.0.0.1:8765/")
 async def menu_test(b, ad, w, h):
     ctx = await b.new_context(viewport={"width": w, "height": h}, **({"has_touch": True, "is_mobile": True} if w < 800 and ad == "chromium" else {}))
-    pg = await ctx.new_page(); await pg.goto(BASE + "index.html")
+    pg = await ctx.new_page(); await pg.goto(BASE + "index")
     sonuc = []
     t = pg.locator("[data-nav-toggle]")
     if not await t.is_visible():
@@ -26,7 +26,7 @@ async def menu_test(b, ad, w, h):
 async def harita_test(b, ad):
     out = []
     ctx = await b.new_context(viewport={"width": 1440, "height": 900}); pg = await ctx.new_page()
-    await pg.goto(BASE + "istanbul-ilceleri.html")
+    await pg.goto(BASE + "istanbul-ilceleri")
     a = pg.locator('.imap a[data-ad="Kadıköy"] path'); await a.hover(); await pg.wait_for_timeout(200)
     out.append("fare: " + (await pg.evaluate("() => { const t = document.querySelector('.imap-tip'); return t.hidden ? 'ipucu yok' : t.textContent; }")))
     etiket = await pg.evaluate("document.querySelectorAll('.imap-l text').length")
@@ -34,7 +34,7 @@ async def harita_test(b, ad):
     await ctx.close()
     if ad == "chromium":
         ctx = await b.new_context(viewport={"width": 390, "height": 844}, has_touch=True, is_mobile=True); pg = await ctx.new_page()
-        await pg.goto(BASE + "istanbul-ilceleri.html")
+        await pg.goto(BASE + "istanbul-ilceleri")
         p = pg.locator('.imap a[data-ad="Üsküdar"] path'); await p.scroll_into_view_if_needed()
         await p.tap(); await pg.wait_for_timeout(250)
         out.append("1. dokunuş: " + (await pg.evaluate("() => { const t = document.querySelector('.imap-tip'); return (t.hidden ? 'ipucu yok' : t.textContent) + ' | ' + location.pathname.split('/').pop(); }")))

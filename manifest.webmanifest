@@ -30,11 +30,11 @@
  "shortcuts": [
   {
    "name": "Talep oluştur",
-   "url": "talep-olustur.html"
+   "url": "talep-olustur"
   },
   {
    "name": "Müşteri talepleri",
-   "url": "musteri-talepleri.html"
+   "url": "musteri-talepleri"
   }
  ]
 }

@@ -185,6 +185,27 @@ CSS = asset_ver("assets/css/style.css")
 JS = asset_ver("assets/js/main.js")
 APPJS = asset_ver("assets/js/app.js")
 
+# ---- Uzantısız adresler: Cloudflare Pages /sayfa.html adresini /sayfa adresine yönlendirir.
+# Canonical, site haritası, yapılandırılmış veri ve iç bağlantılar bu nihai biçimle yazılır.
+def temiz(path):
+    path = re.sub(r"(^|/)index\.html$", r"\1", path)
+    return re.sub(r"\.html(?=$|[?#])", "", path)
+
+def _yerel_adres(v):
+    if re.match(r"^(?:[a-z][a-z0-9+.-]*:|//|#)", v, re.I):
+        return v
+    v = re.sub(r"(^|/)index\.html(?=$|[?#])", r"\1", v)
+    v = re.sub(r"([\w\-]+)\.html(?=$|[?#&])", r"\1", v)
+    v = re.sub(r"=([\w\-/]+)\.html(?=$|&)", r"=\1", v)
+    if v == "" or v.startswith("?") or v.startswith("#"):
+        v = "./" + v
+    return v
+
+def url_temizle(html):
+    html = re.sub(re.escape(BASE_URL) + r"/((?:[\w\-]+/)*)(?:index\.html|([\w\-]+)\.html)",
+                  lambda m: BASE_URL + "/" + m.group(1) + (m.group(2) or ""), html)
+    return re.sub(r'\b(href|action)="([^"]*)"', lambda m: m.group(1) + '="' + _yerel_adres(m.group(2)) + '"', html)
+
 PAGES = []  # sitemap için
 
 def header(P, active):
@@ -261,7 +282,7 @@ def footer(P):
 </aside>'''
 
 def page(path, title, desc, body, P="", active=None, schema=None, extra_js="", noindex=False, og_img="assets/img/og.jpg", son_js=""):
-    url = BASE_URL + "/" + ("" if path == "index.html" else path)
+    url = BASE_URL + "/" + temiz(path)
     full_title = title if SITE in title else f"{title} | {SITE}"
     sch = ""
     org = {"@context": "https://schema.org", "@type": "Organization", "name": SITE, "url": BASE_URL + "/",
@@ -322,6 +343,7 @@ def page(path, title, desc, body, P="", active=None, schema=None, extra_js="", n
 </body>
 </html>
 '''
+    html = url_temizle(html)
     out = os.path.join(ROOT, path)
     os.makedirs(os.path.dirname(out), exist_ok=True)
     open(out, "w", encoding="utf-8").write(html)
@@ -768,7 +790,7 @@ def build_forms():
     <span>İletişim bilgilerimin, platformun ücretli üyesi olan emlak danışmanlarıyla paylaşılmasına onay veriyorum. {kvkk} okudum.</span></label>
   <p class="form-err" role="alert" hidden data-err></p>
   <button class="btn btn-gold btn-lg btn-block" type="submit">{I["check"]}<span>Talebimi gönder</span></button>
-  <p class="form-note">{I["lock"]} Göndermeden önce Google hesabınızla giriş yapmanız istenir; yazdıklarınız kaybolmaz. Telefon numaranız yalnızca iletişim içindir, SMS gönderilmez. Talebinizi daha sonra <a class="link-gold" href="hesabim.html">Hesabım</a> sayfasından görüntüleyebilir, düzenleyebilir veya kapatabilirsiniz.</p>
+  <p class="form-note">{I["lock"]}<span>Göndermeden önce Google hesabınızla giriş yapmanız istenir; yazdıklarınız kaybolmaz. Telefon numaranız yalnızca iletişim içindir, SMS gönderilmez. Talebinizi daha sonra <a class="link-gold" href="hesabim.html">Hesabım</a> sayfasından görüntüleyebilir, düzenleyebilir veya kapatabilirsiniz.</span></p>
 </form>
 {basari_paneli()}'''
     aside = f'''<aside class="side">
@@ -817,7 +839,7 @@ def build_forms():
     <span>{kvkk} okudum; <a href="kullanim-kosullari.html" target="_blank">kullanım koşullarını</a> kabul ediyorum.</span></label>
   <p class="form-err" role="alert" hidden data-err></p>
   <button class="btn btn-gold btn-lg btn-block" type="submit">{I["check"]}<span>Başvurumu gönder</span></button>
-  <p class="form-note">{I["lock"]} Göndermeden önce Google hesabınızla giriş yapmanız istenir; yazdıklarınız kaybolmaz. Telefonunuz iletişim içindir, SMS gönderilmez. Başvurunuzun durumunu Hesabım sayfasından takip edersiniz.</p>
+  <p class="form-note">{I["lock"]}<span>Göndermeden önce Google hesabınızla giriş yapmanız istenir; yazdıklarınız kaybolmaz. Telefonunuz iletişim içindir, SMS gönderilmez. Başvurunuzun durumunu Hesabım sayfasından takip edersiniz.</span></p>
 </form>
 {basari_paneli()}'''
     aside = f'''<aside class="side">
@@ -882,7 +904,7 @@ def build_forms():
   <div class="card form" data-giris>
     <button class="btn btn-google btn-lg btn-block" type="button" data-google-giris>{GOOGLE_G}<span>Google ile giriş yap</span></button>
     <p class="form-err" role="alert" hidden data-err></p>
-    <p class="form-note">{I["lock"]} Hesabınız yoksa ilk girişte otomatik oluşturulur. Google'dan yalnızca adınız ve e-posta adresiniz alınır. Talep oluşturmak için <a class="link-gold" href="talep-olustur.html">buraya</a>, emlakçı başvurusu için <a class="link-gold" href="emlakci-uyelik.html">buraya</a> tıklayın.</p>
+    <p class="form-note">{I["lock"]}<span>Hesabınız yoksa ilk girişte otomatik oluşturulur. Google'dan yalnızca adınız ve e-posta adresiniz alınır. Talep oluşturmak için <a class="link-gold" href="talep-olustur.html">buraya</a>, emlakçı başvurusu için <a class="link-gold" href="emlakci-uyelik.html">buraya</a> tıklayın.</span></p>
   </div>
 </div></section>'''
     page("giris.html", "Üye Girişi", "İstanbul Emlak Ağı üye girişi: Google hesabınızla şifresiz ve ücretsiz giriş yapın.", body, P, None, schema=sch)
@@ -896,7 +918,7 @@ def build_forms():
     # --- yönetici
     body = f'''<section class="page-head"><div class="wrap ph-in"><p class="kicker">Yönetim</p><h1>Yönetici paneli</h1></div></section>
 <section class="sec sec-tight"><div class="wrap" data-yonetici><p class="muted">Yükleniyor…</p></div></section>'''
-    page("yonetici.html", "Yönetici Paneli", "Yönetici paneli.", body, P, None, noindex=True,
+    page("yonetici.html", "Yönetici Paneli", "İstanbul Emlak Ağı yönetici paneli: talepler, emlakçı onayları, üyelikler ve site ayarları.", body, P, None, noindex=True,
          son_js=f'<script src="{P}{asset_ver("assets/js/admin.js")}" defer></script>')
 
 # ------------------------------------------------------------------ PORTFÖY VE İŞ BİRLİĞİ
@@ -1252,7 +1274,7 @@ def build_misc():
   <p class="lead">Sayfa taşınmış veya kaldırılmış olabilir. Ana sayfadan devam edebilir ya da ücretsiz talebinizi oluşturabilirsiniz.</p>
   <div class="actions"><a class="btn btn-gold" href="{P}index.html">Ana sayfa</a><a class="btn btn-line" href="{P}talep-olustur.html">Talep oluştur</a></div>
 </div></section>'''
-    page("404.html", "Sayfa bulunamadı", "Aradığınız sayfa bulunamadı.", body, P, None, noindex=True)
+    page("404.html", "Sayfa bulunamadı", "Aradığınız sayfa bulunamadı. Ana sayfadan devam edebilir ya da ücretsiz talebinizi oluşturabilirsiniz.", body, P, None, noindex=True)
 
     # Çevrimdışı sayfası
     body = f'''<section class="page-head"><div class="wrap ph-in">
@@ -1260,7 +1282,7 @@ def build_misc():
   <p class="lead">İnternet bağlantınız geri geldiğinde sayfayı yenileyin.</p>
   <div class="actions"><a class="btn btn-gold" href="{P}index.html">Yeniden dene</a></div>
 </div></section>'''
-    page("cevrimdisi.html", "Çevrimdışı", "Çevrimdışı.", body, P, None, noindex=True)
+    page("cevrimdisi.html", "Çevrimdışı", "İnternet bağlantınız yok. Bağlantı geri geldiğinde sayfayı yenileyerek devam edebilirsiniz.", body, P, None, noindex=True)
 
     manifest = {
         "name": SITE, "short_name": "Emlak Ağı", "description": S["slogan"], "lang": "tr",
@@ -1271,14 +1293,14 @@ def build_misc():
             {"src": "assets/icons/icon-512.png", "sizes": "512x512", "type": "image/png"},
             {"src": "assets/icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}],
         "shortcuts": [
-            {"name": "Talep oluştur", "url": "talep-olustur.html"},
-            {"name": "Müşteri talepleri", "url": "musteri-talepleri.html"}]}
+            {"name": "Talep oluştur", "url": "talep-olustur"},
+            {"name": "Müşteri talepleri", "url": "musteri-talepleri"}]}
     open(os.path.join(ROOT, "manifest.webmanifest"), "w", encoding="utf-8").write(json.dumps(manifest, ensure_ascii=False, indent=1))
 
     ver = hashlib.sha1((CSS + JS + TODAY.isoformat()).encode()).hexdigest()[:10]
     sw = f'''// {SITE} — service worker (otomatik üretilir)
 const V = "iea-{ver}";
-const CORE = ["./", "index.html", "cevrimdisi.html", "{CSS}", "{JS}", "{asset_ver("assets/js/ilceler.js")}",
+const CORE = ["./", "cevrimdisi", "{CSS}", "{JS}", "{asset_ver("assets/js/ilceler.js")}",
   "assets/fonts/manrope-latin-wght-normal.woff2", "assets/fonts/playfair-display-latin-wght-normal.woff2",
   "assets/icons/logo-44.webp", "assets/icons/icon-192.png"];
 self.addEventListener("install", e => {{ e.waitUntil(caches.open(V).then(c => c.addAll(CORE)).then(() => self.skipWaiting())); }});
@@ -1288,7 +1310,7 @@ self.addEventListener("fetch", e => {{
   if (r.method !== "GET" || new URL(r.url).origin !== location.origin) return;
   if (r.mode === "navigate") {{
     e.respondWith(fetch(r).then(res => {{ const cp = res.clone(); caches.open(V).then(c => c.put(r, cp)); return res; }})
-      .catch(() => caches.match(r).then(m => m || caches.match("cevrimdisi.html"))));
+      .catch(() => caches.match(r).then(m => m || caches.match("cevrimdisi"))));
     return;
   }}
   e.respondWith(caches.match(r).then(m => m || fetch(r).then(res => {{
@@ -1301,7 +1323,7 @@ self.addEventListener("fetch", e => {{
 
     urls = []
     for pth in PAGES:
-        loc = BASE_URL + "/" + ("" if pth == "index.html" else pth)
+        loc = BASE_URL + "/" + temiz(pth)
         pr = "1.0" if pth == "index.html" else ("0.6" if pth.startswith("ilce/") else ("0.3" if pth in ("kvkk-aydinlatma-metni.html", "kullanim-kosullari.html", "cerez-politikasi.html") else "0.8"))
         urls.append(f"  <url><loc>{e(loc)}</loc><priority>{pr}</priority></url>")
     open(os.path.join(ROOT, "sitemap.xml"), "w", encoding="utf-8").write(
