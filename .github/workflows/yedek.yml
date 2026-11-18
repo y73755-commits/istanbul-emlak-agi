@@ -10,7 +10,7 @@ name: Veritabanı yedeği
 #   YEDEK_PAROLASI  : kendi belirlediğiniz uzun bir parola (kaybederseniz yedek açılamaz)
 on:
   schedule:
-    - cron: "40 0 * * *"      # her gece 03:40 (Türkiye saati)
+    - cron: "41 0 * * *"      # her gece 03:41 (Türkiye saati)
   workflow_dispatch:
 permissions:
   contents: read

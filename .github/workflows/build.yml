@@ -4,7 +4,7 @@ on:
     branches: [main]
     paths: ["data/**", "build.py", "tools/**", "kaynak/**", "assets/css/**", "assets/js/**", "_headers", ".github/workflows/**"]
   schedule:
-    - cron: "17 3 * * *"
+    - cron: "19 3 * * *"
   workflow_dispatch:
 permissions:
   contents: write
