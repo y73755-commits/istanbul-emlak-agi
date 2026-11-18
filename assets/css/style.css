@@ -506,6 +506,7 @@ dialog.modal::backdrop{background:rgba(5,8,16,.72);backdrop-filter:blur(3px);-we
 .mah-list{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
 .mah{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;border:1px solid var(--line2);font-size:.82rem;color:var(--beige)}
 .mah button{background:none;border:0;color:var(--muted);cursor:pointer;font-size:1rem;min-width:24px;min-height:24px}
+[data-yonetici] .mah{display:flex;flex-wrap:wrap;width:100%;max-width:100%;border-radius:12px}[data-yonetici] .mah input:not([type]){flex:1 1 9rem;min-width:0}
 
 /* ---------- Google ile giriş ---------- */
 .btn-google{background:#fff;color:#1F1F1F;border:1px solid #DADCE0;font-weight:600}
