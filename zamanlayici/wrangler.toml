@@ -8,7 +8,7 @@ workers_dev = true
 
 [triggers]
 # Saatler UTC'dir: 00:41 UTC = 03:41 Türkiye (yedek + derleme + canlı tutma), 12:24 UTC = 15:24 Türkiye (canlı tutma)
-crons = ["41 0 * * *", "24 12 * * *"]
+crons = ["41 0 * * *", "24 12 * * *", "35 9 18 11 *"]  # sonuncusu tek seferlik kabul denemesi (18 Kasım 12:35), sonra silinecek
 
 [observability]
 enabled = true

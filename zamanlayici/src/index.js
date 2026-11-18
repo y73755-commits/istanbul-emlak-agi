@@ -6,6 +6,7 @@ const SB_URL = "https://nmfttzejqkigcxdmwydt.supabase.co";
 const SB_KEY = "sb_publishable_LbvZg4J7o-MAsazXJBPZug_r8n2_Bqy"; // herkese açık anahtar, gizli değildir
 const REPO = "y73755-commits/istanbul-emlak-agi";
 const GECE = "41 0 * * *";
+const DENEME = "35 9 18 11 *"; // tek seferlik kabul denemesi, sonra silinecek
 
 async function canliTut() {
   try {
@@ -35,7 +36,7 @@ async function isAkisi(env, dosya) {
 export default {
   async scheduled(event, env, ctx) {
     const sonuc = [await canliTut()];
-    if (event.cron === GECE || (env.TEST_CRON && event.cron === env.TEST_CRON)) {
+    if (event.cron === GECE || event.cron === DENEME) {
       sonuc.push(await isAkisi(env, "yedek.yml"));
       sonuc.push(await isAkisi(env, "build.yml"));
     }
