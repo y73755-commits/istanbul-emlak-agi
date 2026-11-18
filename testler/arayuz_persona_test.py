@@ -59,7 +59,11 @@ class Sunucu:
                 "eposta": k.get("eposta"), "ofis_adi": k.get("ofis_adi"), "yetki_belge_no": k.get("yetki"), "hizmet_ilceleri": k.get("ilceler", []),
                 "foto_url": None, "red_nedeni": None, "uyelik_bitis": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(b)) if aktif else None,
                 "kalan_gun": int((b - time.time()) // 86400) + 1 if aktif else None, "ucretli_erisim_aktif": self.ucretli_acik,
-                "yonetici_aal2": k["rol"] == "yonetici" and aal == "aal2"}
+                "yonetici_aal2": self.yonetici(k, aal)}
+
+    def yonetici(self, k, aal):
+        dogrulanmis = (k.get("faktor") or {}).get("status") == "verified"
+        return k["rol"] == "yonetici" and (aal == "aal2" or not dogrulanmis)
 
     def rpc(self, ad, arg, k, aal):
         self.cagrilar.append(ad)
@@ -68,7 +72,7 @@ class Sunucu:
             return 200, self.profil(k, aal) if k else None
         if k is None:
             return 401, {"code": "42501", "message": "Giriş yapmanız gerekiyor."}
-        admin = k["rol"] == "yonetici" and aal == "aal2"
+        admin = self.yonetici(k, aal)
         if ad.startswith("admin_") and not admin:
             return 403, {"code": "42501", "message": "Bu işlem için yönetici yetkisi gerekir."}
         if ad == "talep_olustur":
@@ -363,8 +367,11 @@ async def main():
         kayit("Yönetici paneli: yönetici olmayan Google hesabı reddediliyor", "yetkisine sahip değil" in t0, t0[:70].replace("\n", " "))
         s.siradaki = "admin"
         await pg.click("[data-a-google]")
+        await pg.wait_for_selector("[data-sekme=emlakcilar]", timeout=10000)
+        kayit("Yönetici: telefon kodu kurulu değilken panel Google girişiyle açılıyor; şifre yok", True)
+        await pg.click("[data-a-2fa]")
         await pg.wait_for_selector("input[name=kod]", timeout=10000)
-        kayit("Yönetici: Google girişinden sonra iki adımlı doğrulama (QR) isteniyor; şifre yok", True)
+        kayit("Yönetici: 'İki adımlı doğrulamayı aç' QR kurulumunu başlatıyor", await pg.locator(".qr img").count() == 1)
         qr_ok = await pg.evaluate("""async () => { const i = document.querySelector('.qr img'); if (!i) return 'img yok'; try { await i.decode(); } catch (e) { return 'decode hata: ' + i.src.slice(0, 80); } return i.naturalWidth > 0 && !document.querySelector('[data-yonetici]').innerText.includes('alt=') ? true : 'genislik ' + i.naturalWidth }""")
         kayit("Yönetici: QR görseli bozulmadan yükleniyor (Supabase'in çift tırnaklı SVG biçimi)", qr_ok is True, "" if qr_ok is True else str(qr_ok))
         await pg.fill("input[name=kod]", "111111"); await pg.locator("input[name=kod]").press("Enter"); await pg.wait_for_timeout(700)

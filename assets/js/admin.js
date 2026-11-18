@@ -43,7 +43,8 @@
       return c.auth.mfa.listFactors().then(function (lf) {
         var totp = ((lf.data || {}).totp || []).filter(function (f) { return f.status === "verified"; })[0];
         if (totp) return kodSor(totp.id);
-        return kur();
+        // İki adımlı doğrulama kurulu değilse panel Google girişiyle açılır; panelden isteğe bağlı kurulabilir.
+        return panelAc(true);
       });
     }).catch(hataGoster);
   }
@@ -67,12 +68,14 @@
       if (r.error) throw r.error;
       var t = r.data.totp, qr = String(t.qr_code || ""), m = qr.match(/^data:image\/svg\+xml;[^,]*,([\s\S]*)$/);
       if (m && m[1].trim().charAt(0) === "<") qr = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(m[1]);
-      kodSor(r.data.id, '<p>Hesabınızı korumak için iki adımlı doğrulamayı bir kez kurmanız gerekiyor. Telefonunuzdaki doğrulama uygulamasıyla bu kodu okutun:</p>' +
+      kodSor(r.data.id, '<p>İki adımlı doğrulama isteğe bağlıdır ve yönetici hesabınıza ek koruma sağlar. Açmak için telefonunuzdaki doğrulama uygulamasıyla bu kodu okutun:</p>' +
         '<div class="qr"><img src="' + esc(qr) + '" alt="İki adımlı doğrulama QR kodu" width="264" height="264"></div>' +
         (t.uri ? '<p class="small"><a class="btn btn-ghost btn-sm" href="' + esc(t.uri) + '">Bu telefondaysanız: doğrulama uygulamasında aç</a></p>' : "") +
         '<p class="small muted">QR okutamıyorsanız uygulamada “Kurulum anahtarı gir” seçip bu anahtarı yazın (tür: zamana dayalı):</p>' +
         '<p class="totp-anahtar"><code data-anahtar>' + esc(String(t.secret || "").replace(/(.{4})/g, "$1 ").trim()) + '</code> <button class="btn btn-ghost btn-sm" type="button" data-kopyala>Kopyala</button></p>' +
         '<p class="small"><strong>Kurtarma için:</strong> Bu kurulum anahtarını kâğıda yazıp evde güvenli bir yerde saklayın; fotoğrafını çekmeyin, kimseyle paylaşmayın. Telefonunuz kaybolursa yeni telefondaki doğrulama uygulamasına bu anahtarı girerek aynı kodları yeniden alırsınız.</p>');
+      var fk = $("[data-a-kod]");
+      if (fk) { var vz = document.createElement("button"); vz.type = "button"; vz.className = "btn btn-ghost btn-block"; vz.textContent = "Vazgeç, panele dön"; vz.addEventListener("click", function () { c.auth.mfa.unenroll({ factorId: r.data.id }).then(function () { panelAc(true); }, function () { panelAc(true); }); }); fk.appendChild(vz); }
       var kb = $("[data-kopyala]");
       if (kb) kb.addEventListener("click", function () {
         var yaz = navigator.clipboard && navigator.clipboard.writeText ? navigator.clipboard.writeText(t.secret) : Promise.reject();
@@ -84,13 +87,16 @@
   /* ---------------- panel ---------------- */
   var SEKMELER = [["ozet", "Özet"], ["emlakcilar", "Emlakçılar"], ["talepler", "Talepler"], ["uyelikler", "Üyelikler"], ["kullanicilar", "Kullanıcılar"],
     ["sikayetler", "Şikâyetler"], ["paketler", "Paketler"], ["ayarlar", "Ayarlar"], ["mahalleler", "Mahalleler"], ["kayitlar", "Kayıtlar"]];
-  function panelAc() {
+  function panelAc(kodsuz) {
     A.rpc("profilim").then(function (p) {
       if (!p || !p.yonetici_aal2) { c.auth.signOut(); return girisFormu("Bu hesap yönetici yetkisine sahip değil."); }
-      root.innerHTML = '<div class="admin-ust"><p class="muted small">' + esc(p.ad_soyad || p.eposta || "Yönetici") + ' olarak giriş yapıldı</p><button class="btn btn-ghost btn-sm" type="button" data-a-cikis>Çıkış</button></div>' +
+      root.innerHTML = '<div class="admin-ust"><p class="muted small">' + esc(p.ad_soyad || p.eposta || "Yönetici") + ' olarak giriş yapıldı</p>' +
+        (kodsuz ? '<button class="btn btn-ghost btn-sm" type="button" data-a-2fa title="Telefon koduyla ek koruma">İki adımlı doğrulamayı aç</button>' : "") +
+        '<button class="btn btn-ghost btn-sm" type="button" data-a-cikis>Çıkış</button></div>' +
         '<nav class="admin-tabs" role="tablist">' + SEKMELER.map(function (s, i) { return '<button role="tab" type="button" data-sekme="' + s[0] + '" aria-selected="' + (i === 0) + '">' + s[1] + "</button>"; }).join("") + "</nav>" +
         '<p class="admin-msg" hidden data-admin-msg role="status"></p><div data-sekme-icerik></div>';
       $("[data-a-cikis]").addEventListener("click", function () { c.auth.signOut().then(function () { location.reload(); }); });
+      var b2 = $("[data-a-2fa]"); if (b2) b2.addEventListener("click", function () { kur(); });
       $$("[data-sekme]").forEach(function (b) { b.addEventListener("click", function () { $$("[data-sekme]").forEach(function (x) { x.setAttribute("aria-selected", x === b); }); sekme(b.getAttribute("data-sekme")); }); });
       sekme(location.hash.slice(1) || "ozet");
     }).catch(hataGoster);
