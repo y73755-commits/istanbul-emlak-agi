@@ -8,6 +8,7 @@ name: Veritabanını canlı tut
 on:
   schedule:
     - cron: "23 6 * * *"
+    - cron: "12 7 18 11 *"   # tek seferlik zamanlayıcı denemesi
   workflow_dispatch:
 permissions:
   contents: write
