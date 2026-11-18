@@ -288,7 +288,7 @@ def page(path, title, desc, body, P="", active=None, schema=None, extra_js="", n
     org = {"@context": "https://schema.org", "@type": "Organization", "name": SITE, "url": BASE_URL + "/",
            "logo": BASE_URL + "/assets/icons/icon-512.png", "slogan": S["slogan"],
            "areaServed": {"@type": "City", "name": "İstanbul"}, "address": {"@type": "PostalAddress", "addressLocality": "İstanbul", "addressCountry": "TR"},
-           "contactPoint": {"@type": "ContactPoint", "telephone": "+" + C["whatsapp"], "contactType": "customer service", "areaServed": "TR", "availableLanguage": "Turkish"}}
+           "contactPoint": {"@type": "ContactPoint", "telephone": "+" + C["whatsapp"], "contactType": "customer service", "areaServed": {"@type": "City", "name": "İstanbul"}, "availableLanguage": "Turkish"}}
     blocks = [org] if path == "index.html" else []
     if path == "index.html":
         blocks.append({"@context": "https://schema.org", "@type": "WebSite", "name": SITE, "url": BASE_URL + "/", "inLanguage": "tr-TR"})
@@ -630,6 +630,7 @@ def build_index():
           <li>Ödemeniz kontrol edilir, üyeliğiniz yönetici tarafından açılır.</li>
           <li>Vatandaş taleplerinin tam detayına ve iletişim bilgisine erişin.</li>
         </ol>
+        <p class="small muted" data-ucretli="kapali"><strong>Şu an lansman dönemi:</strong> paket satışı henüz başlamadı; emlakçı iş birliği üyeliği ücretsiz.</p>
         <a class="link-gold" href="uyelik-paketleri.html">Üyelik paketleri{I["arrow"]}</a>
       </div>
     </div>
@@ -963,14 +964,14 @@ def build_isbirligi():
     <div class="card quote-card">
       <p class="kicker">Örnek iş birliği talepleri</p>
       <ul class="quotes">{"".join(f"<li>“{e(x)}”</li>" for x in ornekler)}</ul>
-      <p class="small muted">Emlakçılar bu talepleri inceleyerek kendi portföyleriyle eşleştirir. İlerleyen aşamada otomatik talep eşleştirme ve bildirim sistemi eklenecektir.</p>
+      <p class="small muted">Emlakçılar bu talepleri inceleyerek kendi portföyleriyle eşleştirir ve paylaşan emlakçıyla doğrudan iletişime geçer.</p>
     </div>
   </div>
 </section>
 <section class="sec sec-alt">
   <div class="wrap">
     <div class="steps3">
-      <div class="step-card"><span class="step-ic">{I["shield"]}</span><h3>Onaylı ağ</h3><p>Her emlakçı yetki belgesiyle başvurur, yönetici onayından sonra paylaşım yapar. Ağdaki herkes doğrulanmış profesyoneldir.</p></div>
+      <div class="step-card"><span class="step-ic">{I["shield"]}</span><h3>Onaylı ağ</h3><p>Her emlakçı yetki belgesi numarasıyla başvurur; yalnızca yönetici onayından geçen hesaplar paylaşım yapabilir.</p></div>
       <div class="step-card"><span class="step-ic">{I["hand"]}</span><h3>Ücretsiz iş birliği</h3><p>Emlakçılar kendi aralarında portföy ve müşteri paylaşımını ücretsiz yapar. Komisyon paylaşımı taraflar arasında belirlenir.</p></div>
       <div class="step-card"><span class="step-ic">{I["lock"]}</span><h3>İletişim korunur</h3><p>Paylaşımın detayı ve emlakçının iletişim bilgisi yalnızca onaylı emlakçı üyelere görünür; ziyaretçiler yalnızca özeti görür.</p></div>
     </div>
@@ -1053,8 +1054,8 @@ def build_paketler():
 SSS = [
     ("İstanbul Emlak Ağı bir ilan sitesi mi?", "Hayır. Burası bir talep ve iş birliği platformudur. Vatandaşlar ne aradığını yazar, emlak danışmanları bu taleplere uygun portföylerle ulaşır; emlakçılar da kendi aralarında portföy ve müşteri paylaşır."),
     ("Vatandaşlar için ücret var mı?", "Hayır. Vatandaşlar talep oluşturmak için hiçbir ücret ödemez. Talep göndermek için Google hesabıyla giriş yapmak yeterlidir; şifre veya SMS gerekmez."),
-    ("Adım ve telefonum herkese açık mı olacak?", "Hayır. Yayında yalnızca talebinizin özeti görünür. Adınız, telefonunuz ve tam açıklamanız yalnızca yönetici tarafından onaylanmış, aktif ücretli üyeliği olan emlak danışmanlarıyla, açık onayınıza dayanarak paylaşılır."),
-    ("Talebim ne kadar süre yayında kalır?", f"Talepler {YAYIN_GUN} gün yayında kalır, süre dolunca otomatik olarak yayından kalkar. Daha önce kapatmak veya silinmesini istemek için WhatsApp'tan yazmanız yeterlidir."),
+    ("Adım ve telefonum herkese açık mı olacak?", "Hayır. Yayında yalnızca talebinizin özeti görünür. Adınız, telefonunuz ve tam açıklamanız yalnızca yönetici tarafından onaylanmış, aktif ücretli üyeliği olan emlak danışmanlarıyla, açık onayınıza dayanarak paylaşılır. Lansman döneminde paket satışı başlamadığı için şu an hiçbir emlakçıyla paylaşılmıyor."),
+    ("Talebim ne kadar süre yayında kalır?", f"Talepler {YAYIN_GUN} gün yayında kalır, süre dolunca otomatik olarak yayından kalkar. Talebinizi Hesabım sayfasından istediğiniz zaman düzenleyebilir veya kapatabilirsiniz. Hesabınızı da aynı sayfadan silebilirsiniz."),
     ("Kimler emlakçı üyesi olabilir?", "Taşınmaz Ticareti Yetki Belgesi olan emlak danışmanları ve emlak ofisleri başvurabilir. Hesaplar yönetici onayından sonra aktif olur."),
     ("Üyelik ödemesi nasıl yapılır?", "Sitede kredi kartı veya online ödeme yoktur. Paketinizi WhatsApp'tan talep edersiniz, ödeme bilgileri size iletilir, ödemeniz kontrol edildikten sonra üyeliğiniz açılır."),
     ("Hangi bölgelerde hizmet veriyorsunuz?", "Yalnızca İstanbul'da, 39 ilçenin tamamında hizmet veriyoruz."),
