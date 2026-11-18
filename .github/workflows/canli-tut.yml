@@ -1,4 +1,5 @@
 name: Veritabanını canlı tut
+run-name: "Veritabanını canlı tut (${{ inputs.kaynak || github.event_name }})"
 # 1) Supabase ücretsiz projeleri 7 gün düşük etkinlikte duraklatılır. Bu iş akışı her gün
 #    herkese açık paket listesini okuyarak (ücretsiz, gizli bilgi gerektirmez) projeyi etkin tutmaya çalışır.
 #    Bu bir garanti değildir; proje yine de duraklarsa Supabase panelinden "Resume project" ile açılır.
@@ -9,6 +10,11 @@ on:
   schedule:
     - cron: "24 6 * * *"
   workflow_dispatch:
+    inputs:
+      kaynak:
+        description: "Başlatan"
+        required: false
+        default: "elle"
 permissions:
   contents: write
 jobs:

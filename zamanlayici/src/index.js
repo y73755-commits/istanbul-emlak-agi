@@ -1,12 +1,12 @@
 // İstanbul Emlak Ağı — ücretsiz zamanlayıcı (Cloudflare Workers Free)
 // 1) Her çalışmada Supabase'e küçük bir okuma isteği gönderir (ücretsiz projenin duraklamasına karşı).
-// 2) Gece çalışmasında GitHub'daki "Veritabanı yedeği" ve "Siteyi oluştur" iş akışlarını başlatır.
+// 2) Gece çalışmasında GitHub'daki "Veritabanı yedeği", "Siteyi oluştur" ve "Veritabanını canlı tut"
+//    iş akışlarını başlatır (GitHub'ın kendi zamanlayıcısına güvenmeden).
 //    Bunun için GITHUB_TOKEN gizli değeri gerekir: yalnızca bu depo, yalnızca "Actions: Read and write" izni.
 const SB_URL = "https://nmfttzejqkigcxdmwydt.supabase.co";
 const SB_KEY = "sb_publishable_LbvZg4J7o-MAsazXJBPZug_r8n2_Bqy"; // herkese açık anahtar, gizli değildir
 const REPO = "y73755-commits/istanbul-emlak-agi";
 const GECE = "41 0 * * *";
-const DENEME = "35 9 18 11 *"; // tek seferlik kabul denemesi, sonra silinecek
 
 async function canliTut() {
   try {
@@ -36,9 +36,10 @@ async function isAkisi(env, dosya) {
 export default {
   async scheduled(event, env, ctx) {
     const sonuc = [await canliTut()];
-    if (event.cron === GECE || event.cron === DENEME) {
+    if (event.cron === GECE) {
       sonuc.push(await isAkisi(env, "yedek.yml"));
       sonuc.push(await isAkisi(env, "build.yml"));
+      sonuc.push(await isAkisi(env, "canli-tut.yml"));
     }
     console.log(`[${event.cron}] ${sonuc.join(" | ")}`);
   },
