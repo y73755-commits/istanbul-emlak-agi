@@ -1,0 +1,14 @@
+# İstanbul Emlak Ağı — ücretsiz zamanlayıcı (Cloudflare Workers Free, Cron Triggers)
+# Cloudflare panelinde "iea-zamanlayici" Worker'ına bu klasör bağlıdır (Workers Builds).
+# Gizli değer: GITHUB_TOKEN (Worker > Settings > Variables and Secrets, tür: Secret). Bu dosyada gizli bilgi yoktur.
+name = "iea-zamanlayici"
+main = "src/index.js"
+compatibility_date = "2026-11-01"
+workers_dev = true
+
+[triggers]
+# Saatler UTC'dir: 00:41 UTC = 03:41 Türkiye (yedek + derleme + canlı tutma), 12:24 UTC = 15:24 Türkiye (canlı tutma)
+crons = ["41 0 * * *", "24 12 * * *"]
+
+[observability]
+enabled = true

@@ -1,4 +1,5 @@
 name: Veritabanı yedeği
+run-name: "Veritabanı yedeği (${{ inputs.kaynak || github.event_name }})"
 # Her gece şifreli yedek alır: Supabase veritabanı (kullanıcılar, talepler, üyelikler, ayarlar),
 # kullanıcıların yüklediği profil fotoğrafları ve yapılandırma dosyaları (supabase/, data/, AYARLAR.md).
 # Yedek, GitHub Actions "Artifacts" bölümünde 30 gün saklanır. Dosya AES-256 ile şifrelidir;
@@ -10,8 +11,13 @@ name: Veritabanı yedeği
 #   YEDEK_PAROLASI  : kendi belirlediğiniz uzun bir parola (kaybederseniz yedek açılamaz)
 on:
   schedule:
-    - cron: "41 0 * * *"      # her gece 03:41 (Türkiye saati)
+    - cron: "41 0 * * *"      # her gece 03:41 (Türkiye saati); GitHub zamanlayıcısı gecikirse Cloudflare zamanlayıcısı da başlatır
   workflow_dispatch:
+    inputs:
+      kaynak:
+        description: "Başlatan (elle / cloudflare-zamanlayici)"
+        required: false
+        default: "elle"
 permissions:
   contents: read
 concurrency:
