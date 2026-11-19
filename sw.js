@@ -1,5 +1,5 @@
 // İstanbul Emlak Ağı — service worker (otomatik üretilir)
-const V = "iea-5a5b282c2b";
+const V = "iea-d77aa2db87";
 const CORE = ["./", "cevrimdisi", "assets/css/style.css?v=c9986820", "assets/js/main.js?v=0635749c", "assets/js/ilceler.js?v=b22fda2c",
   "assets/fonts/manrope-latin-wght-normal.woff2", "assets/fonts/playfair-display-latin-wght-normal.woff2",
   "assets/icons/logo-44.webp", "assets/icons/icon-192.png"];
