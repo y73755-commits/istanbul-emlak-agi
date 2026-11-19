@@ -4,8 +4,8 @@
     "ad": "İstanbul Emlak Ağı",
     "slogan": "İstanbul'un Gayrimenkul ve İş Birliği Ağı",
     "kampanya_slogani": "Doğru Talep, Doğru Eşleşme, Güçlü İş Birliği!",
-    "_site_url_notu": "Asıl adres GitHub Pages proje sitesidir (Türkiye'de bazı operatörler *.pages.dev adreslerini engelliyor). Alan adı alındığında yalnızca site_url değerini https://alanadiniz.com yapın; canonical, sitemap.xml, robots.txt, yapılandırılmış veri, PWA, CNAME ve eski adreslerden yönlendirme otomatik güncellenir. Supabase > Authentication > URL Configuration bölümünde Site URL aynı adrese çevrilmeli ve Redirect URLs listesine eklenmelidir.",
-    "site_url": "https://y73755-commits.github.io/istanbul-emlak-agi",
+    "_site_url_notu": "Asıl adres Cloudflare Workers adresidir (Türkiye'de bazı operatörler *.pages.dev adreslerini engelliyor; GitHub Pages ticari kullanıma izin vermiyor). Alan adı alındığında yalnızca site_url değerini https://alanadiniz.com yapın ve alan adını Workers > istanbul-emlak-agi > Domains bölümünden bağlayın; canonical, sitemap.xml, robots.txt, yapılandırılmış veri, PWA ve eski adreslerden yönlendirme otomatik güncellenir. Supabase > Authentication > URL Configuration bölümünde Site URL aynı adrese çevrilmeli ve Redirect URLs listesine eklenmelidir.",
+    "site_url": "https://istanbul-emlak-agi.y73755.workers.dev",
     "google_site_verification": ""
   },
   "iletisim": {

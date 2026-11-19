@@ -14,8 +14,8 @@ Bu dosya, panelden yapılan ve veritabanı yedeğinde yer almayan ayarların kay
   - Phone: **kapalı** (ücretli SMS kullanılmıyor). Test numarası tanımlı değil.
   - Email: e-posta ile kayıt **kapalı** tutulur (Supabase'in varsayılan e-posta hizmeti genel kullanıma uygun değil). Gerekirse yalnızca yönetici, panelden "Add user" ile e-posta hesabı açabilir.
 - **URL Configuration**
-  - Site URL: sitenin asıl adresi — şu an `https://y73755-commits.github.io/istanbul-emlak-agi/` (alan adı alınınca o adres)
-  - Redirect URLs: `https://y73755-commits.github.io/istanbul-emlak-agi/**` ve geçiş süresince eski `https://istanbul-emlak-agi.pages.dev/**`
+  - Site URL: sitenin asıl adresi — şu an `https://istanbul-emlak-agi.y73755.workers.dev/` (alan adı alınınca o adres)
+  - Redirect URLs: `https://istanbul-emlak-agi.y73755.workers.dev/**`; geçiş süresince eski `https://istanbul-emlak-agi.pages.dev/**` ve `https://y73755-commits.github.io/istanbul-emlak-agi/**` de listede
 - **Hooks**: yok (SMS kancası kaldırıldı)
 - **Multi-Factor**: TOTP açık. Yönetici için isteğe bağlı: doğrulanmış kod kuruluysa `yonetici_mi()` aal2 ister, kurulu değilse Google girişi yeter (`008`). Kurtarma: `yonetici_kod_sifirla.sql`
 
@@ -26,8 +26,10 @@ Bu dosya, panelden yapılan ve veritabanı yedeğinde yer almayan ayarların kay
 - Authorized redirect URIs: `https://nmfttzejqkigcxdmwydt.supabase.co/auth/v1/callback`
 
 ## Yayın
-- **Asıl adres: GitHub Pages** — Settings > Pages > Source: Deploy from a branch, `main` / `(root)`. Adres: `https://y73755-commits.github.io/istanbul-emlak-agi/`. GitHub Pages özel yanıt başlığı desteklemez; çerçeveye gömme koruması sayfa başındaki betikle yapılır.
-- **Eski adres: Cloudflare Pages Free** — Proje Git deposuna bağlıdır; production branch: `yayin`, build command: boş, output directory: `/`. `yayin` dalı GitHub Actions ("Siteyi oluştur") tarafından otomatik güncellenir; içindeki `_redirects` her isteği asıl adrese 301 ile aktarır. Türkiye'de bazı operatörler `*.pages.dev` adreslerini engellediği için paylaşılacak adres GitHub Pages adresidir.
+- **Asıl adres: Cloudflare Workers (Workers Free)** — Workers & Pages > `istanbul-emlak-agi`. Git deposuna bağlı (Workers Builds): production branch `worker`, deploy command `test -f wrangler.jsonc && npx wrangler deploy`, root `/`, önizleme derlemeleri kapalı. Adres: `https://istanbul-emlak-agi.y73755.workers.dev`. Yalnızca statik dosya sunar (Worker kodu yok).
+- **Eski adres: Cloudflare Pages Free** — production branch `yayin`; içindeki `_redirects` her isteği asıl adrese 301 ile aktarır.
+- **Eski adres: GitHub Pages** — Settings > Pages > Source: Deploy from a branch, `github-yonlendirme` / `(root)`. Yalnızca yönlendirme sayfaları (GitHub Pages ticari kullanıma izin vermediği için site orada barındırılmaz).
+- Dallar GitHub Actions ("Siteyi oluştur") tarafından otomatik güncellenir; kaynak kod `main` dalındadır.
 - Cloudflare yanıt başlıkları ve önbellek süreleri: depo kökündeki `_headers`
 
 ## GitHub Actions gizli değerleri (Settings > Secrets and variables > Actions)

@@ -8,5 +8,7 @@
 | `yayin` | Cloudflare Pages | https://istanbul-emlak-agi.pages.dev | Site + `_redirects` → her istek asıl adrese 301 |
 | `github-yonlendirme` | GitHub Pages | https://y73755-commits.github.io/istanbul-emlak-agi/ | Yalnızca yönlendirme sayfaları (site GitHub'da barındırılmaz) |
 
+Workers Builds ayarı: production branch `worker`, deploy command `test -f wrangler.jsonc && npx wrangler deploy` (yanlış dal derlenirse yayın yapmadan durur), önizleme derlemeleri kapalı.
+
 GitHub Pages'in kullanım koşulları ticari işlemlere aracılık eden siteleri kabul etmediği için site GitHub Pages'te barındırılmaz.
 Cloudflare'ın ücretsiz planı işletme kullanımına açıktır; Workers'ta statik dosya istekleri ücretsiz ve sınırsızdır.
