@@ -273,6 +273,7 @@ p{margin:0}
 .consent{margin:24px 0 18px;padding:16px;border-radius:12px;background:rgba(11,17,32,.5);border:1px solid var(--line)}
 .form-err{margin-bottom:14px;padding:12px 14px;border-radius:10px;background:rgba(224,122,106,.12);border:1px solid rgba(224,122,106,.4);color:#f4b8ae;font-size:.92rem}
 .form-err[hidden]{display:none}
+.form-err .hata-eylem{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
 .form-note{display:flex;gap:8px;align-items:flex-start;margin-top:16px;color:var(--muted);font-size:.84rem}
 .form-note .i{width:16px;height:16px;color:var(--gold);margin-top:3px}
 .ilce-set{min-inline-size:0;min-width:0;border:1px solid var(--line);border-radius:12px;padding:14px 16px 16px;margin:0 0 14px}
@@ -517,3 +518,7 @@ dialog.modal::backdrop{background:rgba(5,8,16,.72);backdrop-filter:blur(3px);-we
 .form-err.form-ok{background:rgba(31,175,90,.12);border-color:rgba(31,175,90,.4);color:#BBF7D0}
 .matrix-not{margin-top:10px}
 .admin-tablo tbody th{text-transform:none;letter-spacing:0;font-size:.88rem;color:var(--text);font-weight:600}
+
+/* iOS Safari, odaklanılan alanın yazısı 16px'ten küçükse sayfayı yakınlaştırır; dokunmatik/dar ekranlarda ve tüm iOS Safari'lerde (klavyeli iPad dahil) form alanları 16px */
+@media (pointer:coarse),(max-width:640px){input:not([type=checkbox]):not([type=radio]):not([type=range]),select,textarea,.field input,.field select,.field textarea,.admin-filtre input,.admin-filtre select{font-size:16px}}
+@supports (-webkit-touch-callout:none){input:not([type=checkbox]):not([type=radio]):not([type=range]),select,textarea,.field input,.field select,.field textarea,.admin-filtre input,.admin-filtre select{font-size:16px}}

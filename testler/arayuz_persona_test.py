@@ -30,6 +30,8 @@ class Sunucu:
             k["eposta"] = ad + "@test.local"
         self.siradaki = None      # Google ekranında seçilecek hesap
         self.hata_ver = False     # talep_olustur sunucu hatası denemesi
+        self.sil_ag = False       # hesabimi_sil: bağlantı kopması denemesi
+        self.sil_hata = False     # hesabimi_sil: sunucu hatası denemesi
         self.talepler = [{"id": 1, "no": "T-1001", "tip": "vatandas", "kategori": "satilik-konut", "tur": "daire", "islem": "satilik",
                           "ilce": "Kadıköy", "mahalle": "Göztepe", "butce_min": 5000000, "butce_max": 7000000, "m2": 110, "oda": "3+1",
                           "baslik": "Göztepe'de 3+1 daire arıyorum", "ozet": "Metroya yakın", "yayin_tarihi": "2026-11-15T10:00:00Z",
@@ -106,6 +108,12 @@ class Sunucu:
             t = next(t for t in self.talepler if t["id"] == arg["p_id"] and t["sahip"] == k["id"]); t["durum"] = arg["p_durum"]; return 200, {"ok": True}
         if ad == "talep_sil":
             self.talepler = [t for t in self.talepler if not (t["id"] == arg["p_id"] and t["sahip"] == k["id"])]; return 200, {"ok": True}
+        if ad == "hesabimi_sil":
+            if self.sil_hata:
+                return hata("canceling statement due to statement timeout")
+            if k["rol"] == "yonetici":
+                return hata("Yönetici hesabı buradan silinemez.")
+            k["silindi"] = True; return 200, {"ok": True}
         if ad == "talep_detay":
             t = next((t for t in self.talepler if t["id"] == arg["p_id"]), None)
             if not t:
@@ -195,6 +203,8 @@ class Sunucu:
             return await yanit(200, {"id": "f1"})
         if yol == "/auth/v1/logout":
             return await yanit(204)
+        if yol == "/rest/v1/rpc/hesabimi_sil" and self.sil_ag:
+            return await route.abort("internetdisconnected")
         if yol.startswith("/rest/v1/rpc/"):
             kod, veri = self.rpc(yol.rsplit("/", 1)[1], govde, k, aal)
             return await yanit(kod, veri)
@@ -424,6 +434,35 @@ async def main():
         await pg.goto(BASE + "portfoy-is-birligi"); await pg.wait_for_timeout(900)
         acik = await pg.locator("form[data-db-form=isbirligi]").is_visible()
         kayit("Onaylanan emlakçı: iş birliği formu açıldı", acik)
+        await ctx.close()
+
+        # 8) HESAP SİLME: başarısız olunca ana sayfaya gidilmez, veri durur, yeniden denenebilir
+        ctx, pg, h = await yeni(b, s, 390)
+        await pg.goto(BASE + "giris")
+        s.siradaki = "vat"
+        await pg.click("[data-google-giris]")
+        await pg.wait_for_url("**/hesabim", timeout=10000)
+        await pg.wait_for_selector("[data-hesap-sil]", timeout=8000)
+        pg.on("dialog", lambda d: asyncio.ensure_future(d.accept()))
+        s.sil_ag = True
+        await pg.click("[data-hesap-sil]")
+        await pg.wait_for_selector("[data-hesap-sil-hata]:not([hidden])", timeout=8000)
+        m = await pg.inner_text("[data-hesap-sil-hata]")
+        kayit("Hesap silme: bağlantı koptuğunda sayfada kalıyor ve anlaşılır hata gösteriyor",
+              pg.url.endswith("/hesabim") and "silinmedi" in m and "Sunucuya ulaşılamadı" in m and not s.kullanicilar["vat"].get("silindi"), m[:90].replace("\n", " "))
+        kayit("Hesap silme: 'Tekrar dene' düğmesi görünüyor", await pg.locator("[data-hesap-sil-tekrar]").is_visible())
+        s.sil_ag = False; s.sil_hata = True
+        await pg.click("[data-hesap-sil-tekrar]"); await pg.wait_for_timeout(900)
+        m = await pg.inner_text("[data-hesap-sil-hata]")
+        oturum = await pg.evaluate("Object.keys(localStorage).some(function(k){return /auth-token|sb-/.test(k)})")
+        kayit("Hesap silme: sunucu hatasında oturum ve veriler korunuyor", pg.url.endswith("/hesabim") and "tamamlayamadı" in m and oturum, m[:90].replace("\n", " "))
+        s.sil_hata = False
+        async with pg.expect_navigation(timeout=10000):
+            await pg.click("[data-hesap-sil-tekrar]")
+        await pg.wait_for_load_state("load")
+        kayit("Hesap silme: yeniden denemede silindi ve ana sayfaya dönüldü",
+              s.kullanicilar["vat"].get("silindi") and re.search(r"/(index)?$", urllib.parse.urlparse(pg.url).path) is not None, pg.url)
+        kayit("Hesap silme: JS hatası yok", not h, "; ".join(h)[:160])
         await ctx.close()
 
         await b.close()

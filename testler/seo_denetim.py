@@ -2,6 +2,7 @@ import glob, re, os, json, html
 from collections import Counter
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 SITE = json.load(open(os.path.join(ROOT, "data", "site.json"), encoding="utf-8"))["site"]["site_url"].rstrip("/")
+BASE_PATH = re.sub(r"^https?://[^/]+", "", SITE).rstrip("/") + "/"   # proje sitesinde /istanbul-emlak-agi/
 def temiz(f):
     f = re.sub(r"(^|/)index\.html$", r"\1", f)
     return re.sub(r"\.html$", "", f)
@@ -45,7 +46,7 @@ for f in sayfalar:
     for h in re.findall(r'href="([^"#?]*)(?:[#?][^"]*)?"', t):
         if h.startswith(("http", "mailto:", "tel:", "data:", "//", "javascript")) or h.endswith((".webmanifest",)): continue
         if h == "": continue
-        hedef = h.lstrip("/") if h.startswith("/") else os.path.normpath(os.path.join(base, h))
+        hedef = (h[len(BASE_PATH):] if h.startswith(BASE_PATH) else h.lstrip("/")) if h.startswith("/") else os.path.normpath(os.path.join(base, h))
         if hedef in (".", "") or h.endswith("/"): hedef = os.path.join(hedef if hedef not in (".", "") else "", "index.html")
         if not (os.path.isfile(hedef) or os.path.isfile(hedef + ".html")): sorun.append(f"{f}: kırık bağlantı {h}")
 for k, v in basliklar.items():

@@ -26,6 +26,15 @@ S, C, U = D["site"], D["iletisim"], D["uyelik"]
 KOD = T["kodlar"]
 BASE_URL = S["site_url"].rstrip("/")
 BASE_PATH = urllib.parse.urlparse(BASE_URL).path.rstrip("/") + "/"
+BASE_HOST = urllib.parse.urlparse(BASE_URL).hostname or ""
+# Asıl adres dışındaki ücretsiz yayın kopyalarından (pages.dev / github.io) gelen ziyaretçi asıl adrese aktarılır.
+# Türkiye'de bazı operatörler *.pages.dev adreslerini engellediği için asıl adres GitHub Pages'tir (bkz. README).
+# Ayrıca sayfa başka bir sitenin çerçevesine (iframe) gömülürse gizlenir: GitHub Pages X-Frame-Options başlığı gönderemez.
+YONLENDIR = ('(function(){var h=location.hostname;'
+             'if(h!=="' + BASE_HOST + '"&&/\\.(pages\\.dev|github\\.io)$/.test(h)){location.replace("' + BASE_URL +
+             '"+location.pathname.replace(/^\\/istanbul-emlak-agi(?=\\/|$)/,"")+location.search+location.hash);return}'
+             'if(top!==self){try{if(top.location.origin===location.origin)return}catch(e){}'
+             'document.documentElement.style.visibility="hidden";try{top.location.replace(location.href)}catch(e){}}})()')
 TODAY = datetime.date.today()
 YAYIN_GUN = int(D.get("talep_yayin_suresi_gun", 60))
 ILCELER = IST["ilceler"]
@@ -307,7 +316,7 @@ def page(path, title, desc, body, P="", active=None, schema=None, extra_js="", n
 <html lang="tr">
 <head>
 <meta charset="utf-8">
-<script>if(/\\.github\\.io$/.test(location.hostname))location.replace("{BASE_URL}"+location.pathname.replace(/^\\/istanbul-emlak-agi/,"")+location.search+location.hash)</script>
+<script>{YONLENDIR}</script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>{e(full_title)}</title>
 <meta name="description" content="{e(desc)}">
@@ -1337,6 +1346,13 @@ self.addEventListener("fetch", e => {{
         open(cname, "w", encoding="utf-8").write(host + "\n")
     elif os.path.exists(cname):
         os.remove(cname)
+    # Asıl adres GitHub Pages iken Cloudflare Pages kopyası (pages.dev) her isteği sunucu tarafında asıl adrese aktarır.
+    # Asıl adres Cloudflare'a bağlı bir alan adı olursa bu dosya yazılmaz (döngü olmasın); sayfadaki betik yine aktarır.
+    yon = os.path.join(ROOT, "_redirects")
+    if host.endswith("github.io"):
+        open(yon, "w", encoding="utf-8").write(f"/* {BASE_URL}/:splat 301\n")
+    elif os.path.exists(yon):
+        os.remove(yon)
 
 def build_ilce_js():
     data = {i["ad"]: i["mahalleler"] for i in ILCELER}

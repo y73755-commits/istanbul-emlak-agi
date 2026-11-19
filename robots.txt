@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://istanbul-emlak-agi.pages.dev/sitemap.xml
+Sitemap: https://y73755-commits.github.io/istanbul-emlak-agi/sitemap.xml

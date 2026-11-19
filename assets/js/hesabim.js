@@ -190,11 +190,53 @@
     } else if ((b = ev.target.closest("[data-sil]"))) {
       if (!confirm("Bu kayıt ve içindeki kişisel bilgiler kalıcı olarak silinecek. Emin misiniz?")) return;
       A.rpc("talep_sil", { p_id: +b.getAttribute("data-sil") }).then(taleplerim).catch(function (e) { alert(e.message); });
-    } else if (ev.target.closest("[data-hesap-sil]")) {
+    } else if ((b = ev.target.closest("[data-hesap-sil]"))) {
       if (!confirm("Hesabınız ve tüm verileriniz kalıcı olarak silinecek. Bu işlem geri alınamaz. Devam edilsin mi?")) return;
-      A.rpc("hesabimi_sil").then(function () { return A.sb().then(function (c) { return c.auth.signOut(); }); }).finally(function () { try { localStorage.clear(); } catch (e) {} location.replace(P + ""); });
+      hesapSil(b);
+    } else if (ev.target.closest("[data-hesap-sil-tekrar]")) {
+      var sb2 = $("[data-hesap-sil]"); if (sb2) hesapSil(sb2);
     }
   });
+
+  /* Hesap silme: yalnızca sunucu "silindi" dediğinde çıkış yapılıp ana sayfaya gidilir.
+     Başarısız olursa kullanıcı sayfada kalır, verilerin durduğu söylenir ve yeniden deneme sunulur. */
+  function hesapSilNeden(e) {
+    var m = String((e && e.message) || e || "");
+    if (/failed to fetch|load failed|networkerror|fetch failed|network request failed|internet/i.test(m))
+      return { metin: "Sunucuya ulaşılamadı. İnternet bağlantınızı kontrol edip yeniden deneyin.", tekrar: true };
+    if (/oturum|giriş yapmanız|jwt/i.test(m))
+      return { metin: "Oturumunuzun süresi dolmuş. Çıkış yapıp yeniden giriş yaptıktan sonra tekrar deneyin.", tekrar: true, cikis: true };
+    if (/yönetici/i.test(m))
+      return { metin: "Yönetici hesabı bu sayfadan silinemez.", tekrar: false };
+    return { metin: "Sunucu işlemi tamamlayamadı" + (m ? " (" + m + ")" : "") + ". Birkaç dakika sonra yeniden deneyin; sorun sürerse WhatsApp'tan bize yazın.", tekrar: true };
+  }
+  function hesapSil(btn) {
+    var kutu = $("[data-hesap-sil-hata]");
+    if (!kutu) {
+      kutu = document.createElement("div"); kutu.className = "form-err"; kutu.hidden = true;
+      kutu.setAttribute("data-hesap-sil-hata", ""); kutu.setAttribute("role", "alert");
+      btn.parentNode.insertBefore(kutu, btn);
+    }
+    kutu.hidden = true;
+    if (!btn.getAttribute("data-metin")) btn.setAttribute("data-metin", btn.textContent);
+    btn.disabled = true; btn.textContent = "Siliniyor…";
+    A.rpc("hesabimi_sil").then(function () {
+      // Hesap silindi: oturum kapatma hatası artık önemli değil, her durumda çıkılır.
+      return A.sb().then(function (c) { return c.auth.signOut(); }).catch(function () {}).then(function () {
+        try { localStorage.clear(); sessionStorage.clear(); } catch (e) {}
+        location.replace(P + "");
+      });
+    }, function (e) {
+      var n = hesapSilNeden(e);
+      btn.disabled = !n.tekrar; btn.textContent = btn.getAttribute("data-metin");
+      kutu.innerHTML = "<strong>Hesabınız silinmedi; bilgileriniz olduğu gibi duruyor.</strong> " + esc(n.metin) +
+        (n.tekrar || n.cikis ? '<div class="hata-eylem">' +
+          (n.tekrar ? '<button class="btn btn-gold btn-sm" type="button" data-hesap-sil-tekrar>Tekrar dene</button>' : "") +
+          (n.cikis ? '<button class="btn btn-line btn-sm" type="button" data-cikis>Çıkış yap</button>' : "") + "</div>" : "");
+      kutu.hidden = false;
+      try { kutu.scrollIntoView({ block: "nearest" }); } catch (x) {}
+    });
+  }
 
   yukle();
 })();

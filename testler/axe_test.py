@@ -11,7 +11,7 @@ async def main():
             await ctx.route("**/*supabase.co/**", lambda r: r.fulfill(status=200, body="[]", headers={"content-type":"application/json","access-control-allow-origin":"*"}))
             pg=await ctx.new_page()
             for s in SAYFALAR:
-                await pg.goto(BASE+s); await pg.wait_for_timeout(300)
+                await pg.goto(BASE+s, wait_until="load"); await pg.wait_for_timeout(600)
                 await pg.add_script_tag(content=AXE)
                 r=await pg.evaluate("""async()=>{const r=await axe.run(document,{runOnly:{type:'tag',values:['wcag2a','wcag2aa','best-practice']}});
                   return r.violations.map(v=>({id:v.id,n:v.nodes.length,ornek:v.nodes.slice(0,3).map(n=>n.target.join(' ')+' :: '+(n.any[0]?.message||'').slice(0,110))}))}""")

@@ -3,7 +3,7 @@ run-name: "${{ github.event_name == 'workflow_dispatch' && format('Siteyi oluşt
 on:
   push:
     branches: [main]
-    paths: ["data/**", "build.py", "tools/**", "kaynak/**", "assets/css/**", "assets/js/**", "_headers", ".github/workflows/**"]
+    paths: ["data/**", "build.py", "tools/**", "kaynak/**", "assets/css/**", "assets/js/**", "_headers", "_redirects", ".github/workflows/**"]
   schedule:
     - cron: "19 3 * * *"
   workflow_dispatch:
@@ -44,6 +44,7 @@ jobs:
           set -euo pipefail
           rm -rf /tmp/yayin && mkdir /tmp/yayin
           cp -r *.html ilce assets sitemap.xml robots.txt manifest.webmanifest sw.js favicon.ico _headers /tmp/yayin/
+          if [ -f _redirects ]; then cp _redirects /tmp/yayin/; fi
           rm -f /tmp/yayin/google*.html
           cd /tmp/yayin
           git init -q -b yayin

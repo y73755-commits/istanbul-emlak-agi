@@ -4,7 +4,7 @@ Bu dosya, panelden yapılan ve veritabanı yedeğinde yer almayan ayarların kay
 
 ## Supabase projesi
 - Ad: istanbul-emlak-agi · Bölge: Frankfurt (eu-central-1) · Plan: Free (0 TL)
-- Veritabanı kurulumu, sırasıyla: `001_sema.sql`, `002_baslangic_verileri.sql`, `003_zamanlanmis_gorevler.sql`, `004_sms_iletimerkezi.sql` (yalnızca tablolar için; SMS kısmı 005 ile kaldırıldı), `005_ucretsiz_giris.sql`
+- Veritabanı kurulumu, sırasıyla: `001_sema.sql`, `002_baslangic_verileri.sql`, `003_zamanlanmis_gorevler.sql`, `004_sms_iletimerkezi.sql` (yalnızca tablolar için; SMS kısmı 005 ile kaldırıldı), `005_ucretsiz_giris.sql`, `006_canli_tut.sql`, `007_gizlilik_sikilastirma.sql`, `008_yonetici_dogrulama_istege_bagli.sql`, `009_yonetici_gunlugu_koruma.sql`
 - Zamanlanmış görevler (pg_cron): `talep-arsivle` her gece 03:15 UTC, `uyelik-hatirlat` her gün 07:05 UTC (yalnızca işaretler, SMS göndermez)
 - Dosya deposu: `profil` (herkese açık, en fazla 2 MB, jpeg/png/webp; her kullanıcı yalnızca kendi klasörüne yazar)
 
@@ -14,10 +14,10 @@ Bu dosya, panelden yapılan ve veritabanı yedeğinde yer almayan ayarların kay
   - Phone: **kapalı** (ücretli SMS kullanılmıyor). Test numarası tanımlı değil.
   - Email: e-posta ile kayıt **kapalı** tutulur (Supabase'in varsayılan e-posta hizmeti genel kullanıma uygun değil). Gerekirse yalnızca yönetici, panelden "Add user" ile e-posta hesabı açabilir.
 - **URL Configuration**
-  - Site URL: sitenin yayın adresi (şu an Cloudflare Pages adresi; alan adı alınınca o adres)
-  - Redirect URLs: `<site adresi>/**` (ör. `https://istanbul-emlak-agi.pages.dev/**`)
+  - Site URL: sitenin asıl adresi — şu an `https://y73755-commits.github.io/istanbul-emlak-agi/` (alan adı alınınca o adres)
+  - Redirect URLs: `https://y73755-commits.github.io/istanbul-emlak-agi/**` ve geçiş süresince eski `https://istanbul-emlak-agi.pages.dev/**`
 - **Hooks**: yok (SMS kancası kaldırıldı)
-- **Multi-Factor**: TOTP açık (yönetici girişinde zorunlu, `yonetici_mi()` aal2 ister)
+- **Multi-Factor**: TOTP açık. Yönetici için isteğe bağlı: doğrulanmış kod kuruluysa `yonetici_mi()` aal2 ister, kurulu değilse Google girişi yeter (`008`). Kurtarma: `yonetici_kod_sifirla.sql`
 
 ## Google Cloud (OAuth istemcisi)
 - Proje: İstanbul Emlak Ağı · OAuth consent screen: External, yayın durumu "In production"
@@ -25,10 +25,10 @@ Bu dosya, panelden yapılan ve veritabanı yedeğinde yer almayan ayarların kay
 - Authorized JavaScript origins: site adresi
 - Authorized redirect URIs: `https://nmfttzejqkigcxdmwydt.supabase.co/auth/v1/callback`
 
-## Yayın (Cloudflare Pages Free)
-- Proje Git deposuna bağlıdır; **production branch: `yayin`**, build command: boş, output directory: `/`
-- `yayin` dalı GitHub Actions ("Siteyi oluştur") tarafından otomatik güncellenir; kaynak kod `main` dalındadır.
-- Yanıt başlıkları ve önbellek süreleri: depo kökündeki `_headers`
+## Yayın
+- **Asıl adres: GitHub Pages** — Settings > Pages > Source: Deploy from a branch, `main` / `(root)`. Adres: `https://y73755-commits.github.io/istanbul-emlak-agi/`. GitHub Pages özel yanıt başlığı desteklemez; çerçeveye gömme koruması sayfa başındaki betikle yapılır.
+- **Eski adres: Cloudflare Pages Free** — Proje Git deposuna bağlıdır; production branch: `yayin`, build command: boş, output directory: `/`. `yayin` dalı GitHub Actions ("Siteyi oluştur") tarafından otomatik güncellenir; içindeki `_redirects` her isteği asıl adrese 301 ile aktarır. Türkiye'de bazı operatörler `*.pages.dev` adreslerini engellediği için paylaşılacak adres GitHub Pages adresidir.
+- Cloudflare yanıt başlıkları ve önbellek süreleri: depo kökündeki `_headers`
 
 ## GitHub Actions gizli değerleri (Settings > Secrets and variables > Actions)
 - `SUPABASE_DB_URL`: Supabase > Connect > Session pooler adresi (veritabanı şifresiyle)
@@ -38,4 +38,4 @@ Bu dosya, panelden yapılan ve veritabanı yedeğinde yer almayan ayarların kay
 - Yönetici yetkisi depo dosyalarında değil, veritabanında `profiller.rol = 'yonetici'` olarak tutulur.
 - Yeni yönetici: kişi sitede bir kez Google ile giriş yapar, ardından SQL Editor'da
   `update public.profiller set rol = 'yonetici', durum = 'aktif' where eposta = '<e-posta>';`
-  İlk panel girişinde telefondaki doğrulama uygulamasına QR okutulur.
+  Panel Google girişiyle açılır; istenirse panel başlığındaki "İki adımlı doğrulamayı aç" ile telefondaki doğrulama uygulamasına QR okutulur.
