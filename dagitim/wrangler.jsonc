@@ -1,0 +1,14 @@
+// İstanbul Emlak Ağı — asıl yayın: Cloudflare Workers (yalnızca statik dosyalar, Workers Free).
+// Bu dosya "worker" dalının köküne kopyalanır; Cloudflare Workers Builds o dalı "npx wrangler deploy" ile yayınlar.
+// Statik dosya istekleri ücretsiz ve sınırsızdır; Worker kodu yoktur, günlük istek kotası harcanmaz.
+{
+  "name": "istanbul-emlak-agi",
+  "compatibility_date": "2026-11-01",
+  "workers_dev": true,
+  "preview_urls": false,
+  "assets": {
+    "directory": "./public",
+    "html_handling": "auto-trailing-slash",
+    "not_found_handling": "404-page"
+  }
+}

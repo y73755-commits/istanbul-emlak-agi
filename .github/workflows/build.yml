@@ -3,7 +3,7 @@ run-name: "${{ github.event_name == 'workflow_dispatch' && format('Siteyi oluşt
 on:
   push:
     branches: [main]
-    paths: ["data/**", "build.py", "tools/**", "kaynak/**", "assets/css/**", "assets/js/**", "_headers", "_redirects", ".github/workflows/**"]
+    paths: ["data/**", "build.py", "tools/**", "kaynak/**", "assets/css/**", "assets/js/**", "_headers", "_redirects", "dagitim/**", ".github/workflows/**"]
   schedule:
     - cron: "19 3 * * *"
   workflow_dispatch:
@@ -37,23 +37,37 @@ jobs:
           git add -A
           git diff --cached --quiet || git commit -m "Site yeniden oluşturuldu"
           git push
-      - name: Yayın dalını güncelle (Cloudflare Pages yalnızca bu dalı yayınlar)
+      - name: Yayın dallarını güncelle (worker = asıl site, yayin = pages.dev yönlendirmesi, github-yonlendirme = github.io yönlendirmesi)
         env:
           TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
+          URL="https://x-access-token:${TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          SITE_DOSYALARI="*.html ilce assets sitemap.xml robots.txt manifest.webmanifest sw.js favicon.ico _headers"
+          gonder() {  # $1 = klasör, $2 = dal
+            ( cd "$1"
+              git init -q -b "$2"
+              git config user.name "github-actions[bot]"
+              git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+              git add -A && git commit -qm "Yayın ${GITHUB_SHA::7}"
+              if git fetch -q "$URL" "$2" 2>/dev/null && [ "$(git rev-parse FETCH_HEAD^{tree})" = "$(git rev-parse HEAD^{tree})" ]; then
+                echo "$2: değişiklik yok."
+              else
+                git push -qf "$URL" "$2" && echo "$2: güncellendi."
+              fi )
+          }
+          # 1) Asıl site: Cloudflare Workers (statik dosyalar)
+          rm -rf /tmp/worker && mkdir -p /tmp/worker/public
+          cp -r $SITE_DOSYALARI /tmp/worker/public/
+          rm -f /tmp/worker/public/google*.html
+          cp dagitim/wrangler.jsonc /tmp/worker/wrangler.jsonc
+          gonder /tmp/worker worker
+          # 2) Eski Cloudflare Pages adresi: site + _redirects (her istek asıl adrese 301)
           rm -rf /tmp/yayin && mkdir /tmp/yayin
-          cp -r *.html ilce assets sitemap.xml robots.txt manifest.webmanifest sw.js favicon.ico _headers /tmp/yayin/
+          cp -r $SITE_DOSYALARI /tmp/yayin/
           if [ -f _redirects ]; then cp _redirects /tmp/yayin/; fi
           rm -f /tmp/yayin/google*.html
-          cd /tmp/yayin
-          git init -q -b yayin
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A && git commit -qm "Yayın ${GITHUB_SHA::7}"
-          URL="https://x-access-token:${TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
-          if git fetch -q "$URL" yayin 2>/dev/null && [ "$(git rev-parse FETCH_HEAD^{tree})" = "$(git rev-parse HEAD^{tree})" ]; then
-            echo "Yayın dosyaları değişmedi."
-          else
-            git push -qf "$URL" yayin && echo "Yayın dalı güncellendi."
-          fi
+          gonder /tmp/yayin yayin
+          # 3) Eski GitHub Pages adresi: yalnızca yönlendirme sayfaları
+          python3 tools/yonlendirme_sayfalari.py . /tmp/ghy
+          gonder /tmp/ghy github-yonlendirme

@@ -28,8 +28,8 @@ BASE_URL = S["site_url"].rstrip("/")
 BASE_PATH = urllib.parse.urlparse(BASE_URL).path.rstrip("/") + "/"
 BASE_HOST = urllib.parse.urlparse(BASE_URL).hostname or ""
 # Asıl adres dışındaki ücretsiz yayın kopyalarından (pages.dev / github.io) gelen ziyaretçi asıl adrese aktarılır.
-# Türkiye'de bazı operatörler *.pages.dev adreslerini engellediği için asıl adres GitHub Pages'tir (bkz. README).
-# Ayrıca sayfa başka bir sitenin çerçevesine (iframe) gömülürse gizlenir: GitHub Pages X-Frame-Options başlığı gönderemez.
+# Türkiye'de bazı operatörler *.pages.dev adreslerini engellediği için asıl adres Cloudflare Workers (workers.dev) adresidir (bkz. README).
+# Ayrıca sayfa başka bir sitenin çerçevesine (iframe) gömülürse gizlenir (başlık desteklemeyen kopyalar için yedek koruma).
 YONLENDIR = ('(function(){var h=location.hostname;'
              'if(h!=="' + BASE_HOST + '"&&/\\.(pages\\.dev|github\\.io)$/.test(h)){location.replace("' + BASE_URL +
              '"+location.pathname.replace(/^\\/istanbul-emlak-agi(?=\\/|$)/,"")+location.search+location.hash);return}'
@@ -1342,14 +1342,15 @@ self.addEventListener("fetch", e => {{
     # Özel alan adı bağlandığında (site_url kök adres olduğunda) GitHub Pages için CNAME dosyası otomatik yazılır.
     host = urllib.parse.urlparse(BASE_URL).hostname or ""
     cname = os.path.join(ROOT, "CNAME")
-    if BASE_PATH == "/" and not host.endswith(("github.io", "pages.dev")):
+    if BASE_PATH == "/" and not host.endswith(("github.io", "pages.dev", "workers.dev")):
         open(cname, "w", encoding="utf-8").write(host + "\n")
     elif os.path.exists(cname):
         os.remove(cname)
-    # Asıl adres GitHub Pages iken Cloudflare Pages kopyası (pages.dev) her isteği sunucu tarafında asıl adrese aktarır.
-    # Asıl adres Cloudflare'a bağlı bir alan adı olursa bu dosya yazılmaz (döngü olmasın); sayfadaki betik yine aktarır.
+    # Eski Cloudflare Pages kopyası (pages.dev, "yayin" dalı) her isteği sunucu tarafında asıl adrese aktarır.
+    # Bu dosya yalnızca yayin dalına kopyalanır; asıl sitenin (Workers, "worker" dalı) içine konmaz.
+    # Asıl adres Cloudflare Pages'e bağlı bir alan adı olursa yazılmaz (döngü olmasın); sayfadaki betik yine aktarır.
     yon = os.path.join(ROOT, "_redirects")
-    if host.endswith("github.io"):
+    if host.endswith(("github.io", "workers.dev")):
         open(yon, "w", encoding="utf-8").write(f"/* {BASE_URL}/:splat 301\n")
     elif os.path.exists(yon):
         os.remove(yon)
