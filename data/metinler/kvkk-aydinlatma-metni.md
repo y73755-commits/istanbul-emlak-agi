@@ -6,7 +6,7 @@ Son güncelleme: 17 Kasım 2026. Bu metin, hukuk danışmanımızın incelemesi 
 
 ## 2. Platformun işleyişi ve verilerinizin bize ulaşma yolu
 
-Talep formu, emlakçı başvuru formu ve iş birliği formu, Google hesabınızla giriş yaptıktan sonra gönderilir ve Platform'un veritabanına kaydedilir. Girişte Google'dan yalnızca adınız ve e-posta adresiniz alınır; Google şifrenizi Platform hiçbir zaman görmez. Telefon numaranızı iletişim bilgisi olarak siz yazarsınız; numara SMS ile doğrulanmaz. WhatsApp üzerinden bize yazdığınızda, bu yazışma da kişisel verilerinizin bize ulaştığı bir yoldur.
+Talep formu, emlakçı başvuru formu ve iş birliği formu, Google hesabınızla giriş yaptıktan sonra gönderilir ve Platform'un veri tabanına kaydedilir. Girişte Google'dan yalnızca adınız ve e-posta adresiniz alınır; Google şifrenizi Platform hiçbir zaman görmez. Telefon numaranızı iletişim bilgisi olarak siz yazarsınız; numara SMS ile doğrulanmaz. WhatsApp üzerinden bize yazdığınızda, bu yazışma da kişisel verilerinizin bize ulaştığı bir yoldur.
 
 ## 3. İşlenen kişisel veriler
 
@@ -33,7 +33,7 @@ Kişisel verileriniz KVKK'nın 5. maddesinde yer alan; bir sözleşmenin kurulma
 
 - **Emlak danışmanlarına:** Vatandaşların ad, telefon ve tam talep açıklaması yalnızca açık rıza ile, yönetici tarafından onaylanmış ve aktif ücretli üyeliği olan emlak danışmanlarıyla paylaşılır. Bir emlakçının hangi talebin iletişim bilgisine eriştiği kayıt altına alınır.
 - **Herkese açık yayın:** Talebinizin yalnızca özeti (başlık, tür, ilçe/mahalle, bütçe, oda/metrekare, kısa açıklama) sitede yayınlanır. Adınız ve telefonunuz yayınlanmaz.
-- **Barındırma ve veritabanı:** Platform verileri, veritabanı hizmet sağlayıcısı Supabase'in Almanya'daki (Frankfurt) sunucularında saklanır. Site dosyaları Cloudflare altyapısı üzerinden sunulur. Bu nedenle verileriniz yurt dışına aktarılmaktadır; aktarım, KVKK'nın 9. maddesinde öngörülen güvencelerle yapılır.
+- **Barındırma ve veri tabanı:** Platform verileri, veri tabanı hizmet sağlayıcısı Supabase'in Almanya'daki (Frankfurt) sunucularında saklanır. Site dosyaları Cloudflare altyapısı üzerinden sunulur. Bu nedenle verileriniz yurt dışına aktarılmaktadır; aktarım, KVKK'nın 9. maddesinde öngörülen güvencelerle yapılır.
 - **Giriş hizmeti:** Google ile giriş seçildiğinde kimlik doğrulama Google altyapısında yapılır.
 - **İletişim altyapısı:** WhatsApp üzerinden yazıştığınızda, yazışmalar WhatsApp hizmet sağlayıcısının (Meta) altyapısında, yurt dışındaki sunucularda işlenebilir. Bu iletişim kanalını kullanmayı tercih ettiğinizde ilgili aktarım, kendi isteğinizle başlattığınız iletişimin gereği olarak gerçekleşir.
 - **Yetkili kurumlar:** Kanunen yetkili kamu kurum ve kuruluşlarına, talep edilmesi hâlinde.

@@ -683,7 +683,7 @@ def build_index():
   </div>
 </section>'''
     page("index.html", f"{SITE} | {S['slogan']}",
-         "İstanbul'un 39 ilçesinde gayrimenkul arayan vatandaşları, emlak danışmanlarını ve emlak ofislerini buluşturan talep ve iş birliği platformu. Ücretsiz talep oluşturun.",
+         "İstanbul'un 39 ilçesinde gayrimenkul arayanları, emlak danışmanlarını ve ofisleri buluşturan talep ve iş birliği platformu. Ücretsiz talep oluşturun.",
          body, P, "index.html", extra_js=ilce_js(P))
 
 # ------------------------------------------------------------------ TALEP LİSTELERİ
@@ -728,7 +728,7 @@ def build_lists():
     {ORNEK_NOT if any(t.get("ornek") for t in VT) else ""}
   </div>
 </section>'''
-    page("musteri-talepleri.html", "Müşteri Talepleri — İstanbul Gayrimenkul Talepleri",
+    page("musteri-talepleri.html", "İstanbul Gayrimenkul Müşteri Talepleri",
          "İstanbul'da satılık ve kiralık konut, arsa, ofis ve dükkân arayan vatandaşların güncel talepleri. İlçe, mahalle, tür ve bütçeye göre filtreleyin.",
          body, P, "musteri-talepleri.html", schema=sch, extra_js=ilce_js(P))
 
@@ -750,7 +750,7 @@ def build_lists():
     {ORNEK_NOT if any(t.get("ornek") for t in ET) else ""}
   </div>
 </section>'''
-    page("emlakci-talepleri.html", "Emlakçı Talepleri — Portföy ve Müşteri İş Birliği",
+    page("emlakci-talepleri.html", "Emlakçı Talepleri ve İş Birliği",
          "İstanbul'daki emlak danışmanlarının portföy, alıcı ve kiracı müşteri iş birliği talepleri. Onaylı emlakçılar detay ve iletişime erişir.",
          body, P, "emlakci-talepleri.html", schema=sch, extra_js=ilce_js(P))
 
@@ -987,7 +987,7 @@ def build_isbirligi():
   </div>
 </section>
 <section class="sec sec-tight"><div class="wrap narrow">{form}</div></section>'''
-    page("portfoy-is-birligi.html", "Portföy ve İş Birliği — Emlakçılar Arası Paylaşım",
+    page("portfoy-is-birligi.html", "Emlakçılar Arası Portföy ve İş Birliği",
          "İstanbul'daki emlak danışmanları için portföy ve müşteri iş birliği alanı: satılık/kiralık portföy, alıcı ve kiracı müşteri, arsa ve kat karşılığı talepleri.",
          body, P, "portfoy-is-birligi.html", schema=sch, extra_js=ilce_js(P))
 
@@ -1149,7 +1149,7 @@ def build_ilceler():
     </div>
   </div>
 </section>'''
-    page("istanbul-ilceleri.html", "İstanbul İlçeleri — 39 İlçede Gayrimenkul Talepleri",
+    page("istanbul-ilceleri.html", "39 İlçede Gayrimenkul Talepleri",
          "İstanbul'un Avrupa ve Anadolu yakasındaki 39 ilçesinde güncel gayrimenkul talepleri ve mahalle listeleri.",
          body, P, None, schema=sch)
 
@@ -1227,7 +1227,7 @@ def build_ilceler():
 </section>'''
         aciklama = (f"{ad_de} satılık ve kiralık konut, arsa, ofis ve dükkân talepleri. "
                     f"{len(i['mahalleler'])} mahallede ücretsiz talep oluşturun, onaylı emlak danışmanları size ulaşsın.")
-        page(f"ilce/{i['slug']}.html", f"{ad} Gayrimenkul Talepleri — Satılık, Kiralık, Arsa",
+        page(f"ilce/{i['slug']}.html", f"{ad} Satılık, Kiralık ve Arsa Talepleri",
              aciklama, body, P, None, schema=sch)
 
 # ------------------------------------------------------------------ YASAL METİNLER
@@ -1264,8 +1264,8 @@ def build_yasal():
     rep = {"{{site}}": SITE, "{{veri_sorumlusu}}": vs_satir, "{{iletisim}}": iletisim, "{{yayin_gun}}": str(YAYIN_GUN)}
     for slug, baslik, desc in [
         ("kvkk-aydinlatma-metni", "KVKK Aydınlatma Metni", "İstanbul Emlak Ağı kişisel verilerin işlenmesine ilişkin aydınlatma metni."),
-        ("kullanim-kosullari", "Kullanım Koşulları", "İstanbul Emlak Ağı platformunun kullanım koşulları."),
-        ("cerez-politikasi", "Çerez Politikası", "İstanbul Emlak Ağı çerez ve yerel depolama politikası."),
+        ("kullanim-kosullari", "Kullanım Koşulları", "İstanbul Emlak Ağı kullanım koşulları: platformun niteliği, vatandaş ve emlakçı üyeler, üyelik ve ödeme, yasak içerik ve sorumluluk sınırı."),
+        ("cerez-politikasi", "Çerez Politikası", "İstanbul Emlak Ağı çerez ve yerel depolama politikası: çerez kullanılıp kullanılmadığı ve cihazınızda hangi bilgilerin neden saklandığı."),
     ]:
         raw = open(os.path.join(ROOT, "data", "metinler", slug + ".md"), encoding="utf-8").read()
         for k, v in rep.items():
