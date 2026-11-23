@@ -792,7 +792,7 @@ def build_forms():
     ph, sch = page_head(P, "Ücretsiz talep", "Gayrimenkul talebinizi oluşturun",
         "Ücretsizdir. Formu doldurun ve Google hesabınızla tek tıkla giriş yapın; talebiniz kontrol edildikten sonra özet olarak yayınlanır. Adınız ve telefonunuz herkese açık yayınlanmaz.",
         None, [("index.html", "Ana Sayfa"), (None, "Talep Oluştur")])
-    form = f'''<form class="card form" data-db-form="vatandas" novalidate>
+    form = f'''<form class="card form" method="post" action="#" data-db-form="vatandas" novalidate>
   {talep_alanlari("v", "vatandas")}
   <h2 class="form-h">İletişim bilgileriniz</h2>
   <div class="form-grid">{kisi_alanlari("v")}</div>
@@ -835,7 +835,7 @@ def build_forms():
     ph, sch = page_head(P, "Emlakçı üyeliği", "Emlak danışmanı olarak ağa katılın",
         "Taşınmaz Ticareti Yetki Belgesi olan emlak danışmanları ve emlak ofisleri başvurabilir. Başvurunuz yönetici tarafından kontrol edilir; onaylandığında hesabınız açılır ve iş birliği paylaşımlarına katılırsınız.",
         "is-birligi", [("index.html", "Ana Sayfa"), ("uye-ol.html", "Üye Ol"), (None, "Emlakçı Üyeliği")])
-    form = f'''<form class="card form" data-db-form="emlakci" novalidate>
+    form = f'''<form class="card form" method="post" action="#" data-db-form="emlakci" novalidate>
   <h2 class="form-h first">Kişisel ve ofis bilgileri</h2>
   <div class="form-grid">
     {kisi_alanlari("k", ofis=True)}
@@ -951,7 +951,7 @@ def build_isbirligi():
     <div class="actions"><a class="btn btn-gold btn-sm" href="giris.html?donus=portfoy-is-birligi.html">Giriş yap</a><a class="btn btn-line btn-sm" href="emlakci-uyelik.html">Emlakçı başvurusu</a></div>
   </div>
 </div>
-<form class="card form" data-db-form="isbirligi" hidden novalidate>
+<form class="card form" method="post" action="#" data-db-form="isbirligi" hidden novalidate>
   <h2 class="form-h first">İş birliği talebi gönder</h2>
   <p class="small muted">Paylaşan: <strong data-isb-kim></strong>. Paylaşımınız kontrol edildikten sonra yayınlanır; iletişim bilgileriniz profilinizden alınır.</p>
   {talep_alanlari("i", "emlakci")}
