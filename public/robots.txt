@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://istanbul-emlak-agi.y73755.workers.dev/sitemap.xml
